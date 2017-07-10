@@ -17,14 +17,15 @@ devtools::load_all()
 # save(me, file = "./sandbox/samples.RData")
 
 load("./sandbox/samples.RData")
-x <- as.fishbone(me$m.03.2, motif.length = 4)
+x <- as.fishbone(me$m.14.1, motif.length = 5)
 plot(x)
 
 markers <- c("m.03", "m.06", "m.14", "m.16", "m.17", "m.25", "m.51",
-             "m.51", "m.57", "m.63", "m.64", "m.65", "m.67", "m.68")
+             "m.57", "m.63", "m.64", "m.65", "m.67", "m.68")
 
-pdf("all_markers.pdf", onefile = TRUE, width = 10, height = 8)
+pdf("./sandbox/all_markers.pdf", onefile = TRUE, width = 10, height = 8)
 for (i in markers) {
+  message(sprintf("Plotting %s", i))
   xy <- mget(ls(pattern = i, envir = me), envir = me)
   xy <- sapply(xy, as.fishbone, simplify = FALSE, motif.length = ifelse(i == "m.14", 5, 4))
   plotRuns(xy)
