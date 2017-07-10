@@ -47,6 +47,9 @@ plot.fishbone <- function(x, ...) {
   # mark those as not OK
   x$group[((x$lengths - canal) %% rl) != 0] <- "not OK"
 
+  # Coerce to factor to preserve correct ordering
+  x$Allele <- factor(x$Allele, levels = rev(x$Allele))
+
   out <- ggplot(x, aes_string(x = "Allele", y = "Read_Count", fill = "group")) +
     theme_bw() +
     ylab("") +

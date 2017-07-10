@@ -10,6 +10,7 @@ as.fishbone <- function(x, motif.length) {
   if (!all(c("Sample_Name", "Plate", "Marker", "Read_Count", "Allele", "Sequence") %in% names(x))) {
     stop("Please see the documentation for mandatory column names.")
   }
+
   find.sequence <- which.max(sapply(x[1,], nchar))
   x <- as.data.frame(x)
   x$seq.preview <- sapply(x[find.sequence], substr, start = 1, stop = 5)
