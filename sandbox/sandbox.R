@@ -1,6 +1,8 @@
 roxygen2::roxygenize()
 devtools::load_all()
 # devtools::use_package("gridExtra")
+
+# extract data for one sample
 # library(readxl)
 # xy <- read_excel("./data/genotypes_dinalpbear_gatc_notrash.xlsx")
 # xy$Marker <- sprintf("%02d", xy$Marker)
@@ -31,3 +33,8 @@ for (i in markers) {
   plotRuns(xy)
 }
 dev.off()
+
+tbase <- data.frame(stat = c("B", "IT", "LRT", "S"))
+tbase$L <- "03"
+tbase$value <- c(1/3, 0.1, 100, 0.2)
+tbase
