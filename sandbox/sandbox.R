@@ -3,9 +3,9 @@ devtools::load_all()
 # devtools::use_package("gridExtra")
 
 # extract data for one sample
-# library(readxl)
-# xy <- read_excel("./data/genotypes_dinalpbear_gatc_notrash.xlsx")
-# xy$Marker <- sprintf("%02d", xy$Marker)
+library(readxl)
+xy <- read_excel("./data/genotypes_dinalpbear_gatc_notrash.xlsx")
+xy$Marker <- sprintf("%02d", xy$Marker)
 #
 # m1 <- as.data.frame(xy[(xy$Sample_Name %in% "M0TJT.Q") & (xy$Plate %in% 1:8), ])
 # m1$Run_Name <- NULL
@@ -38,3 +38,30 @@ tbase <- data.frame(stat = c("B", "IT", "LRT", "S"))
 tbase$L <- "03"
 tbase$value <- c(1/3, 0.1, 100, 0.2)
 tbase
+
+motif <- data.frame(locus = c("03", "06", "14", "16", "17", "25", "51", "57", "63", "64",
+                              "65", "67", "68"),
+                    motif = c("ctat", "aagg", "tttta", "cttt", "cttt", "cttt", "cttt",
+                              "catt", "tcca", "ttta", "gata", "attt", "atct"),
+                    stringsAsFactors = FALSE)
+
+mot <- "tttta"
+st <- x$Sequence[6]
+al <- x$Sequence[4]
+al2 <- x$Sequence[5]
+fst <- sub(mot, "", al)
+fst2 <- sub(mot, "", al2)
+
+rbind(strsplit(fst, "")[[1]], strsplit(st, "")[[1]])
+sum(strsplit(fst, "")[[1]] != strsplit(st, "")[[1]])
+
+rbind(strsplit(fst2, "")[[1]], strsplit(st, "")[[1]])
+sum(strsplit(fst2, "")[[1]] != strsplit(st, "")[[1]])
+
+lengths(gregexpr(mot, al))
+
+out <- xy[xy$Marker == "14", ]
+e <- regmatches(x = out$Sequence, m = gregexpr(mot, out$Sequence))
+elen <- lengths(e)
+table(elen)
+as.data.frame(out[which(elen == 5), ])

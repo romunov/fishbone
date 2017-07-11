@@ -18,8 +18,6 @@ as.fishbone <- function(x, motif.length) {
 
   x$lengths <- as.numeric(gsub("(^\\d+)_(\\d+)$", "\\1", x$Allele))
   x$poly <- as.numeric(gsub("(^\\d+)_(\\d+)$", "\\2", x$Allele))
-  # remove.ln.poly <- which(names(x) %in% c("lengths", "poly"))
-  # x <- x[order(x$lengths, rev(x$poly), decreasing = TRUE), -remove.ln.poly]
   x <- x[order(x$lengths, rev(x$poly), decreasing = TRUE), ]
 
   attr(x, "sequence") <- find.sequence

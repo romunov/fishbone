@@ -9,7 +9,7 @@
 #' A = allele
 #' S = stutter
 #' IT = ignore threshold
-#' LRT = low run
+#' LRT = low run threshold
 #' B = balance
 #'
 #' The result is appended two columns, one for called A and another for flagged.
@@ -24,19 +24,20 @@
 #' - find number of reads for highest A -> maxA
 #'
 #' for each A:
-#' 1. compare everything according to the highest read count, calculate relative size to maxA -> rs
-#' 2. if signal is below ignore threshold (IT), remove this allele
-#' 3. if below low run threshold (LRT), add flag "L"
-#' 4. if stutter for A found, call, otherwise flag as "N"
-#' 5. if rs <= B, add flag "B"
-#' 6. if number of unflagged A > 2, add flag "M" to all alleles
+#' compare everything according to the highest read count, calculate relative size to maxA -> rs
+#' 1. if signal is below ignore threshold (IT), remove this allele
+#' 2. if below low run threshold (LRT), add flag "L"
+#' 3. if stutter for A found, call, otherwise flag as "N"
+#' 4. if rs <= B, add flag "B"
+#' 5. if number of unflagged A > 2, add flag "M" to all alleles
 #'
 #' @param fb A `fishbone` object.
 #' column names.
 #' @param tbase A data.frame with thresholds which are locus specific. Thresholds are balance of alleles (B),
-#' ignore threshold (IT), low run threshold (LRT) and relative stutter height (S)
+#' ignore threshold (IT), low run threshold (LRT) and relative stutter height (S).
+#' @param motif A data.frame of loci motifs. Expected two columns with loci names (`locus`) and actual motifs (`motif`).
 
-callGenotype <- function(fb, tbase) {
+callGenotype <- function(fb, tbase, motif) {
   # This is the function which implements core of the algorithm explained in the help file (or see
   # roxygen2 comments above).
 
@@ -45,6 +46,7 @@ callGenotype <- function(fb, tbase) {
   x.split <- split(fb, f = 1:nrow(fb), drop = TRUE)
 
   cg <- function(x, maxA, fb) {
+    id <- rownames(x)
     # prepare thresholds
     locus <- unique(fb$Marker)
     stopifnot(length(locus) == 1)
@@ -53,16 +55,63 @@ callGenotype <- function(fb, tbase) {
     S <- fetchTH(tbase, stat = "S", locus = locus)
     LRT <- fetchTH(tbase, stat = "LRT", locus = locus)
 
-    # 1. compare everything according to the highest read count, calculate relative size to maxA -> rs
-    rl <- x/maxA
+    # prepare columns to be used for calling/flagging of allele(s)
+    x$call <- NA
+    x$flag <- NA
 
+    # compare everything according to the highest read count, calculate relative size to maxA -> rs
+    rs <- x/maxA
+
+    # 1. if signal is below ignore threshold (IT), remove this allele
     if (rl <= IT) {
-      x
+      return(NA)
     }
+
+    # 2. if below low run threshold (LRT), add flag "L"
+    if (rl <= LRT) {
+      x$flag <- "L"
+    }
+
+    # 3. if stutter for A found, call, otherwise flag as "N"
+    findStutter(x, locus = locus, fb = fb, motif = motif[motif$locus == locus])
+    # 4. if rs <= B, add flag "B"
+    # 5. if number of unflagged A > 2, add flag "M" to all alleles
   }
-  sapply(x.split, FUN = cg, maxA = max(x$Read_Count))
+  sapply(x.split, FUN = cg, maxA = max(x$Read_Count), fb = fb)
 }
 
+#' Find locus specific stutter.
+#'
+#' From a `fishbone` object, try to find a stutter.
+#' @param x A `fishbone` object.
+#' @param locus Character. Since threshold values can be locus specific, which locus?
+#' @param fb A `fishbone` object with cancidate stutter alleles.
+findStutter <- function(x, locus, fb, motif) {
+  # motif = "attt"
+  # fb = data.frame(Sample_Name, Allele, lengths...)
+  # locus = "03"
+
+  # 1. fetch motif for given locus
+  mt <- motif[motif$locus = locus, "motif"]
+  # 2. shorten allele for a given motif
+  new.stt <- sub(mt, replacement = "", x = x$Sequence)
+
+  # issue a warning if allele was not shortened into a stutter - indicative that something,
+  # somewhere, somehow went wrong
+  if (nchar(new.stt) >= x$Sequence) {
+    warning(sprintf("findStutter: unable to shorten allele into a stutter (sequence %s of locus %s and motif %s)",
+                    x$Sequence, locus, motif))
+  }
+
+  # 3. compare to candidate stutters and see if it matches structurally
+  x
+  # 4. return candidate stutter allele
+}
+#' Fetch threshold values from some database.
+#' @param x A slice of `fishbone` object.
+#' @param stat Which statistic to fetch, e.g. "IT", "B", "S", "LRT".
+#' @param locus Character. For which locus to fetch statistics?
+#' @author Roman Lustrik (roman.lustri@@biolitika.si)
 fetchTH <- function(x, stat, locus) {
   out <- x[x$stat == stat & x$L == locus, "value"]
   stopifnot(nrow(out) == 1)
