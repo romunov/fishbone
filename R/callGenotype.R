@@ -45,8 +45,10 @@ callGenotype <- function(fb, tbase, motif) {
   # coerces input to vector).
   x.split <- split(fb, f = 1:nrow(fb), drop = TRUE)
 
-  cg <- function(x, maxA, fb) {
+  cg <- function(x, maxA, fb, tbase) {
     id <- rownames(x)
+    fb <- fb[!(rownames(fb) %in% id), ]
+
     # prepare thresholds
     locus <- unique(fb$Marker)
     stopifnot(length(locus) == 1)
@@ -57,27 +59,34 @@ callGenotype <- function(fb, tbase, motif) {
 
     # prepare columns to be used for calling/flagging of allele(s)
     x$call <- NA
-    x$flag <- NA
+    x$flag <- ""
 
     # compare everything according to the highest read count, calculate relative size to maxA -> rs
-    rs <- x/maxA
+    rs <- x$lengths/maxA
 
     # 1. if signal is below ignore threshold (IT), remove this allele
-    if (rl <= IT) {
+    if (rs <= IT) {
       return(NA)
     }
 
     # 2. if below low run threshold (LRT), add flag "L"
     if (rl <= LRT) {
-      x$flag <- "L"
+      x$flag <- paste(x$flag, "L", sep = "")
     }
 
     # 3. if stutter for A found, call, otherwise flag as "N"
-    findStutter(x, locus = locus, fb = fb, motif = motif[motif$locus == locus])
+    find.stt <- findStutter(x, locus = locus, fb = fb, motif = motif[motif$locus == locus])
+
+    if (find.stt == TRUE) {
+      x$call <- "called"
+    } else {
+      x$flag <- paste(x$flag, "N", sep = "")
+    }
+
     # 4. if rs <= B, add flag "B"
     # 5. if number of unflagged A > 2, add flag "M" to all alleles
   }
-  sapply(x.split, FUN = cg, maxA = max(x$Read_Count), fb = fb)
+  sapply(x.split, FUN = cg, maxA = max(x$Read_Count), fb = fb, tbase = tbase)
 }
 
 #' Find locus specific stutter.
@@ -104,8 +113,22 @@ findStutter <- function(x, locus, fb, motif) {
   }
 
   # 3. compare to candidate stutters and see if it matches structurally
-  x
+  # candidate stutters can be n*length of motif shorter
+  motif.length <- nchar(motif)
+  cand.stt <- x[x$lengths == (x$lengths - motif.length), ]
+
+  if (nrow(cand.stt) < 1) {
+    return("No")
+  }
+
+  found.stt <- cand.stt[new.stt == cand.stt$Sequence, ]
+
   # 4. return candidate stutter allele
+  if (nrow(found.stt) == 1) {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
 }
 #' Fetch threshold values from some database.
 #' @param x A slice of `fishbone` object.
