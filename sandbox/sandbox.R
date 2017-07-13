@@ -34,9 +34,9 @@ for (i in markers) {
 }
 dev.off()
 
-tbase <- data.frame(stat = c("B", "IT", "LRT", "S"))
+tbase <- data.frame(stat = c("B", "IT", "LRT"))
 tbase$L <- "03"
-tbase$value <- c(1/3, 0.1, 100, 0.2)
+tbase$value <- c(1/3, 0.1, 100)
 tbase
 
 motif <- data.frame(locus = c("03", "06", "14", "16", "17", "25", "51", "57", "63", "64",
