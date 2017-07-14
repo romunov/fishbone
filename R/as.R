@@ -4,6 +4,11 @@
 #'
 #' @param x Object of class \code{data.frame} or similar.
 #' @param motif.length Integer. Length of the repeating motif, locus specific.
+#'
+#' @return It adds an extra column with shortened sequence to enable pretty printing. It also
+#' adds two more columns, namely `length` which reads sequence length and `poly` which is the
+#' variation of the allele.
+#'
 #' @author Roman Lustrik (roman.lustrik@@biolitika.si)
 #' @export
 as.fishbone <- function(x, motif.length) {
