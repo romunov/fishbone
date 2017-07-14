@@ -4,8 +4,8 @@ devtools::load_all()
 
 # extract data for one sample
 library(readxl)
-xy <- read_excel("./data/genotypes_dinalpbear_gatc_notrash.xlsx")
-xy$Marker <- sprintf("%02d", xy$Marker)
+# xy <- read_excel("./data/genotypes_dinalpbear_gatc_notrash.xlsx")
+# xy$Marker <- sprintf("%02d", xy$Marker)
 #
 # m1 <- as.data.frame(xy[(xy$Sample_Name %in% "M0TJT.Q") & (xy$Plate %in% 1:8), ])
 # m1$Run_Name <- NULL
@@ -20,7 +20,20 @@ xy$Marker <- sprintf("%02d", xy$Marker)
 
 load("./sandbox/samples.RData")
 x <- as.fishbone(me$m.14.1, motif.length = 5)
+
 plot(x)
+
+tbase <- data.frame(stat = c("B", "IT", "LRT"))
+tbase$L <- "14"
+tbase$value <- c(1/3, 0.1, 100)
+
+mymotif <- data.frame(locus = c("03", "06", "14", "16", "17", "25", "51", "57", "63", "64",
+                              "65", "67", "68"),
+                    motif = c("ctat", "aagg", "tttta", "cttt", "cttt", "cttt", "cttt",
+                              "catt", "tcca", "ttta", "gata", "attt", "atct"),
+                    stringsAsFactors = FALSE)
+
+callGenotype(fb = x, tbase = tbase, motif = mymotif)
 
 markers <- c("m.03", "m.06", "m.14", "m.16", "m.17", "m.25", "m.51",
              "m.57", "m.63", "m.64", "m.65", "m.67", "m.68")
@@ -34,16 +47,7 @@ for (i in markers) {
 }
 dev.off()
 
-tbase <- data.frame(stat = c("B", "IT", "LRT"))
-tbase$L <- "03"
-tbase$value <- c(1/3, 0.1, 100)
-tbase
 
-motif <- data.frame(locus = c("03", "06", "14", "16", "17", "25", "51", "57", "63", "64",
-                              "65", "67", "68"),
-                    motif = c("ctat", "aagg", "tttta", "cttt", "cttt", "cttt", "cttt",
-                              "catt", "tcca", "ttta", "gata", "attt", "atct"),
-                    stringsAsFactors = FALSE)
 
 mot <- "tttta"
 st <- x$Sequence[6]

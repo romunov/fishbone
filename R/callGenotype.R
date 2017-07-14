@@ -1,9 +1,15 @@
-#' Automatically call or flag alleles
+#' Automatically call or flag alleles from NGS data
 #'
 #' Call or flag candidate alleles to construct a consensus genotype.
 #'
 #' Function works on an individual run (one PCR reaction). Use R functionality to
-#' apply this to sample * locus * run combination.
+#' apply this to sample * locus * run combination. The data should come from an NGS run as
+#' processed by de Barba et al. (2016).
+#'
+#' De Barba, M., Miquel, C., Lobréaux, S., Quenette, P. Y., Swenson, J. E., & Taberlet, P. (2016).
+#' High-throughput microsatellite genotyping in ecology: improved accuracy, efficiency, standardization
+#' and success with low-quantity and degraded DNA. Molecular Ecology Resources, 1–16.
+#' https://doi.org/10.1111/1755-0998.12594
 #'
 #' Key for abbreviations:
 #' A = allele
@@ -37,21 +43,29 @@
 #' ignore threshold (IT), low run threshold (LRT) and relative stutter height (S).
 #' @param motif A data.frame of loci motifs. Expected two columns with loci names (`locus`) and actual motifs (`motif`).
 
-callGenotype <- function(fb, tbase, motif) {
+callGenotype <- function(fb, tbase = NULL, motif = NULL) {
+  if (is.null(tbase)) stop("Please provide `tbase` object.")
+  if (is.null(motif)) stop("Please provide `motif` object.")
+
   # This is the function which implements core of the algorithm explained in the help file (or see
   # roxygen2 comments above).
+
+  # This function runs on sample * locus * run combination, which means only one marker per plate.
+  locus <- unique(fb$Marker)
+
+  stopifnot(length(locus) == 1)
+  stopifnot(length(unique(fb$Plate)) == 1)
+
 
   # prepare columns to be used for calling/flagging of allele(s)
   fb$call <- NA
   fb$flag <- ""
 
-  # Check for LRT from the get go. A calling proceeds like for any other run.
   # 2. if below low run threshold (LRT), add flag "L"
-  locus <- unique(fb$Marker)
-  stopifnot(length(locus) == 1)
+  # Check for LRT from the get go. A calling proceeds like for any other run.
   LRT <- fetchTH(tbase, stat = "LRT", locus = locus)
 
-  if (max(fb$Read_count) <= LRT) {
+  if (max(fb$Read_Count) <= LRT) {
     fb$flag <- paste(fb$flag, "L", sep = "")
   }
 
@@ -59,30 +73,30 @@ callGenotype <- function(fb, tbase, motif) {
   # coerces input to vector which can hold only one type).
   x.split <- split(fb, f = 1:nrow(fb), drop = TRUE)
 
-  cg <- function(x, maxA, fb, tbase) {
+  cg <- function(x, maxA, fb, tbase, motif) {
+    # exclude x from `fb` dataset so as not to compare against itself
     id <- rownames(x)
     fb <- fb[!(rownames(fb) %in% id), ]
 
-    # prepare thresholds
+    # prepare thresholds and find locus used down the line
     locus <- unique(fb$Marker)
     stopifnot(length(locus) == 1)
     IT <- fetchTH(tbase, stat = "IT", locus = locus)
     B <- fetchTH(tbase, stat = "B", locus = locus)
-    LRT <- fetchTH(tbase, stat = "LRT", locus = locus)
 
-    # calculate relative size to maxA -> rs
-    rs <- x$lengths/maxA
+    # calculate relative size to maxA
+    rs <- x$Read_Count/maxA
 
     # 1. If signal is below the ignore threshold (IT), remove/ignore A.
     if (rs <= IT) {
-      return(NA)
+      return(NULL)
     }
 
     # 2. It makes sense to do this step before iterating over all alleles. See code in the
     # immediate definition of `callGenotype`.
 
-    # 3. Find structural stutter for A. If found, call it, otherwise flag as "N".
-    find.stt <- findStutter(x, locus = locus, fb = fb, motif = motif[motif$locus == locus])
+    # 3. Find structural stutter for A. If one stutter found, call it, otherwise flag as "N".
+    find.stt <- findStutter(x, fb = fb, motif = motif[motif$locus == locus, "motif"])
 
     if (is.character(find.stt)) {
       x$call <- "called"
@@ -98,15 +112,16 @@ callGenotype <- function(fb, tbase, motif) {
     x
   }
 
-  run.A <- sapply(x.split, FUN = cg, maxA = max(x$Read_Count), fb = fb, tbase = tbase, simplify = FALSE)
+  run.A <- sapply(x.split, FUN = cg, maxA = max(x$Read_Count), fb = fb, tbase = tbase,
+                  motif = motif, simplify = FALSE)
 
   # Remove all A which are flagged as non A
-  run.A <- run.A[!sapply(run.A, FUN = is.na)]
+  run.A <- run.A[!sapply(run.A, FUN = is.null)]
 
   run.A <- do.call(rbind, run.A)
 
   # 5. if number of unflagged A > 2, add flag "M" to all alleles
-  if (length(run.A) > 2) {
+  if (nrow(run.A) > 2) {
     run.A$flag <- paste(run.A$flag, "M", sep = "")
   }
   run.A
@@ -116,35 +131,28 @@ callGenotype <- function(fb, tbase, motif) {
 #'
 #' From a `fishbone` object, try to find a stutter.
 #' @param x A `fishbone` object.
-#' @param locus Character. Since threshold values can be locus specific, which locus?
 #' @param fb A `fishbone` object with cancidate stutter alleles.
 #' @return A character string of the row name of the stutter(s).
 #' @author Roman Lustrik (roman.lustrik@@biolitika.si)
 
-findStutter <- function(x, locus, fb, motif) {
-  # motif = "attt"
-  # fb = data.frame(Sample_Name, Allele, lengths...)
-  # locus = "03"
-
-  # 1. fetch motif for given locus
-  mt <- motif[motif$locus == locus, "motif"]
-  # 2. shorten allele for a given motif
-  new.stt <- sub(mt, replacement = "", x = x$Sequence)
+findStutter <- function(x, fb, motif) {
+  # 1. shorten allele for a given motif
+  new.stt <- sub(motif, replacement = "", x = x$Sequence)
 
   # return FALSE if allele was not shortened into a stutter - indicative that something,
   # somewhere, somehow went wrong
   if (nchar(new.stt) >= x$Sequence) {
-    warning(sprintf("findStutter: unable to shorten allele into a stutter (sequence %s of locus %s and motif %s)",
-                    unique(x$Sequence), locus, motif)
+    warning(sprintf("findStutter: unable to shorten allele into a stutter (sequence %s of motif %s)",
+                    unique(x$Sequence), motif)
     )
     return(FALSE)
   }
 
-  # 3. Compare to candidate stutters and see if it matches structurally
+  # 2. Compare to candidate stutters and see if it matches structurally
   # candidate stutters of motif length shorter. Since we are using tetra- and penta-
   # repeats, stutters of 2*motif_lengths are not very common.
   motif.length <- nchar(motif)
-  cand.stt <- x[x$lengths == (x$lengths - motif.length), ]
+  cand.stt <- fb[fb$lengths == (x$lengths - motif.length), ]
 
   if (nrow(cand.stt) < 1) {
     return(FALSE)
@@ -152,12 +160,13 @@ findStutter <- function(x, locus, fb, motif) {
 
   found.stt <- cand.stt[new.stt == cand.stt$Sequence, ]
 
-  # 4. return candidate stutter allele rowname
+  # 3. return candidate stutter allele rowname
   if (nrow(found.stt) == 1) {
+    message(sprintf("Stutter from allele %s", rownames(found.stt)))
     return(rownames(found.stt))
   } else {
-    warning(sprintf("findStutter: Found multiple stutters for sample %s and locus %s",
-                    x$Sample_Name, locus))
+    warning(sprintf("findStutter: Found multiple stutters for sample %s",
+                    x$Sample_Name))
     return(rownames(found.stt))
   }
 }
@@ -170,6 +179,6 @@ findStutter <- function(x, locus, fb, motif) {
 
 fetchTH <- function(x, stat, locus) {
   out <- x[x$stat == stat & x$L == locus, "value"]
-  stopifnot(nrow(out) == 1)
+  if (length(out) != 1) stop(sprintf("Unable to fetch %s for locus %s.", stat, locus))
   out
 }
