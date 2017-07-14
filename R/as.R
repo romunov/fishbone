@@ -11,6 +11,7 @@
 #'
 #' @author Roman Lustrik (roman.lustrik@@biolitika.si)
 #' @export
+
 as.fishbone <- function(x, motif.length) {
   if (!all(c("Sample_Name", "Plate", "Marker", "Read_Count", "Allele", "Sequence") %in% names(x))) {
     stop("Please see the documentation for mandatory column names.")
