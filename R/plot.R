@@ -7,7 +7,7 @@
 #'
 #' @importFrom ggplot2 ggplot
 #' @importFrom gridExtra grid.arrange
-#'
+
 plotRuns <- function(x) {
   xy.plots <- vector("list", length(x))
 
@@ -38,6 +38,8 @@ plotRuns <- function(x) {
 #' @importFrom ggplot2 scale_fill_brewer
 #'
 plot.fishbone <- function(x, ...) {
+  stopifnot(any(class(x) %in% "fishbone"))
+
   # Find which allele is not a slip of length of the nucleotide repeat sequence.
   # For example, if you have a tetranucleotide, values should be a multiple of 4.
   rl <- attr(x, "motif.length")
