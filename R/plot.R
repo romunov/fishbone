@@ -44,20 +44,18 @@ plot.fishbone <- function(x, ...) {
   # For example, if you have a tetranucleotide, values should be a multiple of 4.
   rl <- attr(x, "motif.length")
   canal <- x$lengths[which.max(x$Read_Count)] # candidate allele with highest count
-  x$group <- "ok"
-  # find if lenght of others corresponds to the multiple of nucleotide length and
-  # mark those as not OK
-  x$group[((x$lengths - canal) %% rl) != 0] <- "not OK"
 
   # Coerce to factor to preserve correct ordering
   x$Allele <- factor(x$Allele, levels = rev(x$Allele))
+  x$lengths <- factor(x$lengths, levels = rev(unique(x$lengths)))
 
-  out <- ggplot(x, aes_string(x = "Allele", y = "Read_Count", fill = "group")) +
+  out <- ggplot(x, aes_string(x = "lengths", y = "Read_Count", group = "Allele")) +
     theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.25)) +
     ylab("") +
-    xlab(sprintf("Alleles for locus %s", unique(x$Marker))) +
-    # assign blue to ok and red to not OK
-    scale_fill_manual(values = c("not OK" = "#E41A1C", "ok" = "#377EB8"), guide = FALSE) +
-    geom_col()
+    geom_col(position = "dodge", width = 0.5) +
+    geom_text(aes_string(x = "lengths", y = "Read_Count", label = "Allele"), position = position_dodge(0.9),
+              vjust = -0.5) +
+    xlab(sprintf("Marker: %s; Locus: %s; Run: %s", unique(x$Marker), unique(x$Sample_Name), unique(x$Plate)))
   out
 }
