@@ -6,6 +6,9 @@
 #' apply this to sample * locus * run combination. The data should come from an NGS run as
 #' processed by de Barba et al. (2016).
 #'
+#' A note o finding stutters: For each candidate allele the sequence is shortened for the first
+#' motif found given the locus.
+#'
 #' De Barba, M., Miquel, C., Lobréaux, S., Quenette, P. Y., Swenson, J. E., & Taberlet, P. (2016).
 #' High-throughput microsatellite genotyping in ecology: improved accuracy, efficiency, standardization
 #' and success with low-quantity and degraded DNA. Molecular Ecology Resources, 1–16.
