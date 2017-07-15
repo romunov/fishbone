@@ -3,7 +3,7 @@ devtools::load_all()
 # devtools::use_package("gridExtra")
 
 # extract data for one sample
-library(readxl)
+# library(readxl)
 # xy <- read_excel("./data/genotypes_dinalpbear_gatc_notrash.xlsx")
 # xy$Marker <- sprintf("%02d", xy$Marker)
 #
@@ -19,19 +19,26 @@ library(readxl)
 # save(me, file = "./sandbox/samples.RData")
 
 load("./sandbox/samples.RData")
-x <- as.fishbone(me$m.14.1, motif.length = 5)
-
+x <- as.fishbone(me$m.03.1, motif = mymotif)
+attributes(x)
 plot(x)
 
-tbase <- data.frame(stat = c("B", "IT", "LRT"))
-tbase$L <- "14"
-tbase$value <- c(1/3, 0.1, 100)
+tbase <- read.table("sandbox/thresholds.csv", sep = "\t", dec = ",", header = TRUE,
+                    colClasses = c("character", "character", "numeric"))
+mymotif <- read.table("sandbox/motifs.csv", sep = "\t", header = TRUE,
+                      colClasses = "character")
 
-mymotif <- data.frame(locus = c("03", "06", "14", "16", "17", "25", "51", "57", "63", "64",
-                              "65", "67", "68"),
-                    motif = c("ctat", "aagg", "tttta", "cttt", "cttt", "cttt", "cttt",
-                              "catt", "tcca", "ttta", "gata", "attt", "atct"),
-                    stringsAsFactors = FALSE)
+m <- mget(names(me)[grepl("m\\.03", names(me))], envir = me)
+m <- sapply(m, FUN = as.fishbone, motif = mymotif, simplify = FALSE)
+plotRuns(m)
+
+lapply(m, FUN = function(i) {
+  ix <- as.fishbone(i, motif.length = nchar(mymotif[mymotif$locus == unique(i$Marker), "motif"]))
+  callGenotype(ix, tbase = tbase, motif = mymotif)
+})
+
+
+
 
 callGenotype(fb = x, tbase = tbase, motif = mymotif)
 
@@ -48,24 +55,25 @@ for (i in markers) {
 dev.off()
 
 
+# poglej kako se obnašajo posamezni lokusi
+library(readxl)
+xy <- as.data.frame(read_excel("./data/genotypes_dinalpbear_gatc_notrash.xlsx"))
+xy$Marker <- sprintf("%02d", xy$Marker)
+xy$old_Allele <- NULL
+xy$Sample_ID <- NULL
+xy$Run_Name <- NULL
+xy$TagCombo <- NULL
+xy$Position <- NULL
 
-mot <- "tttta"
-st <- x$Sequence[6]
-al <- x$Sequence[4]
-al2 <- x$Sequence[5]
-fst <- sub(mot, "", al)
-fst2 <- sub(mot, "", al2)
+tbase <- read.table("sandbox/thresholds.csv", sep = "\t", dec = ",", header = TRUE,
+                    colClasses = c("character", "character", "numeric"))
+mymotif <- read.table("sandbox/motifs.csv", sep = "\t", header = TRUE,
+                      colClasses = "character")
 
-rbind(strsplit(fst, "")[[1]], strsplit(st, "")[[1]])
-sum(strsplit(fst, "")[[1]] != strsplit(st, "")[[1]])
-
-rbind(strsplit(fst2, "")[[1]], strsplit(st, "")[[1]])
-sum(strsplit(fst2, "")[[1]] != strsplit(st, "")[[1]])
-
-lengths(gregexpr(mot, al))
-
-out <- xy[xy$Marker == "14", ]
-e <- regmatches(x = out$Sequence, m = gregexpr(mot, out$Sequence))
-elen <- lengths(e)
-table(elen)
-as.data.frame(out[which(elen == 5), ])
+pdf("all_samples_03.pdf", width = 8, height = 6)
+x <- by(data = xy, INDICES = list(xy$Marker, xy$Sample), FUN = function(i) {
+  message(sprintf("Plotting %s for sample %s", unique(i$Marker), unique(i$Sample)))
+  as.fb <- sapply(split(i, f = i$Plate), as.fishbone, motif = mymotif, simplify = FALSE)
+  plotRuns(as.fb)
+})
+dev.off()
