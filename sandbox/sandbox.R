@@ -1,5 +1,7 @@
 roxygen2::roxygenize()
 devtools::load_all()
+
+library(gridExtra)
 # devtools::use_package("gridExtra")
 
 # extract data for one sample
@@ -70,10 +72,25 @@ tbase <- read.table("sandbox/thresholds.csv", sep = "\t", dec = ",", header = TR
 mymotif <- read.table("sandbox/motifs.csv", sep = "\t", header = TRUE,
                       colClasses = "character")
 
-pdf("all_samples_03.pdf", width = 8, height = 6)
-x <- by(data = xy, INDICES = list(xy$Marker, xy$Sample), FUN = function(i) {
+xy1 <- droplevels(xy[!grepl("Blk", xy$Sample_Name), ])
+pdf("all_samples.pdf", width = 10, height = 8)
+x <- by(data = xy1, INDICES = list(xy1$Marker, xy1$Sample), FUN = function(i) {
   message(sprintf("Plotting %s for sample %s", unique(i$Marker), unique(i$Sample)))
   as.fb <- sapply(split(i, f = i$Plate), as.fishbone, motif = mymotif, simplify = FALSE)
-  plotRuns(as.fb)
+  gg <- plotRuns(as.fb)
+
+  gt <- sapply(as.fb, callGenotype, motif = mymotif, tbase = tbase, simplify = FALSE)
+  gt <- gt[!is.na(gt)]
+  gt <- do.call(rbind, gt)
+
+  # add called genotyped table if possible
+  if (length(gt) > 0) {
+    gt <- as.data.frame(gt)
+    gt <- tableGrob(gt[, -which(names(gt) %in% c("seq.preview", "Sequence", "lengths", "poly"))],
+              theme = ttheme_minimal())
+    grid.arrange(gg, gt, ncol = 1)
+  } else {
+    gg
+  }
 })
 dev.off()
