@@ -59,7 +59,6 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
   stopifnot(length(locus) == 1)
   stopifnot(length(unique(fb$Plate)) == 1)
 
-
   # prepare columns to be used for calling/flagging of allele(s)
   fb$call <- NA
   fb$flag <- ""
@@ -77,15 +76,24 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
   x.split <- split(fb, f = 1:nrow(fb), drop = TRUE)
 
   cg <- function(x, maxA, fb, tbase, motif) {
-    # exclude x from `fb` dataset so as not to compare against itself
-    id <- rownames(x)
-    fb <- fb[!(rownames(fb) %in% id), ]
-
     # prepare thresholds and find locus used down the line
     locus <- unique(fb$Marker)
     stopifnot(length(locus) == 1)
     IT <- fetchTH(tbase, stat = "IT", locus = locus)
     B <- fetchTH(tbase, stat = "B", locus = locus)
+
+    # exclude x from `fb` dataset so as not to compare against itself
+    id <- rownames(x)
+    remove.self <- !(rownames(fb) %in% id)
+    fb.noself <- fb[remove.self, ]
+
+    # If there is only one candidate allele, it can't have a stutter, so add a flag.
+    if (length(fb.noself) == 0) {
+      fb$flag <- paste(fb$flag, "N")
+      return(NULL)
+    } else {
+      fb <- fb.noself
+    }
 
     # calculate relative size to maxA
     rs <- x$Read_Count/maxA
@@ -122,6 +130,11 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
   run.A <- run.A[!sapply(run.A, FUN = is.null)]
 
   run.A <- do.call(rbind, run.A)
+
+  if (length(run.A) == 0) {
+    message(sprintf("No genotypes called for %s (%s)", unique(fb$Sample_Name), unique(fb$Marker)))
+    return(NA)
+  }
 
   # 5. if number of unflagged A > 2, add flag "M" to all alleles
   if (nrow(run.A) > 2) {
@@ -168,8 +181,7 @@ findStutter <- function(x, fb, motif) {
     message(sprintf("Stutter from allele %s", rownames(found.stt)))
     return(rownames(found.stt))
   } else {
-    warning(sprintf("findStutter: Found multiple stutters for sample %s",
-                    x$Sample_Name))
+    warning(sprintf("findStutter: Found multiple stutters for sample %s", x$Sample_Name))
     return(rownames(found.stt))
   }
 }
