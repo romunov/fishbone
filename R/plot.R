@@ -9,13 +9,19 @@
 #' @importFrom gridExtra grid.arrange
 
 plotRuns <- function(x) {
+  if (all(is.na(x))) {
+    message("Nothing to draw.")
+    return(NA)
+  }
+
   xy.plots <- vector("list", length(x))
 
   for (i in 1:length(xy.plots)) {
     xy.plots[[i]] <- plot.fishbone(x[[i]])
   }
 
-  grid.arrange(grobs = xy.plots, ncol = 4)
+  out <- do.call(arrangeGrob, c(xy.plots, list(ncol = 4)))
+  out
 }
 
 #' Plot fishbone object.
@@ -51,7 +57,8 @@ plot.fishbone <- function(x, ...) {
 
   out <- ggplot(x, aes_string(x = "lengths", y = "Read_Count", group = "Allele")) +
     theme_bw() +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.25)) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.25),
+          axis.title.x = element_text(size = 10)) +
     ylab("") +
     geom_col(position = "dodge", width = 0.5) +
     geom_text(aes_string(x = "lengths", y = "Read_Count", label = "Allele"), position = position_dodge(0.9),
