@@ -63,6 +63,6 @@ plot.fishbone <- function(x, ...) {
     geom_col(position = "dodge", width = 0.5) +
     geom_text(aes_string(x = "lengths", y = "Read_Count", label = "Allele"), position = position_dodge(0.9),
               vjust = -0.5) +
-    xlab(sprintf("Marker: %s; Locus: %s; Run: %s", unique(x$Marker), unique(x$Sample_Name), unique(x$Plate)))
+    xlab(sprintf("Marker: %s; Sample: %s; Run: %s", unique(x$Marker), unique(x$Sample_Name), unique(x$Plate)))
   out
 }
