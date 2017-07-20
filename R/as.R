@@ -38,7 +38,7 @@ as.fishbone <- function(x, motif) {
   x$seq.preview <- paste(x$seq.preview, "...", sep = "")
 
   x$lengths <- as.numeric(gsub("(^\\d+)_(\\d+)$", "\\1", x$Allele))
-  x$poly <- as.numeric(gsub("(^\\d+)_(\\d+)$", "\\2", x$Allele))
+  x$poly <- as.numeric(gsub("(^\\d+)_(\\d+)$", "\\2", x$Allele)) # variant of allele
   x <- x[order(x$lengths, rev(x$poly), decreasing = TRUE), ]
 
   attr(x, "sequence") <- find.sequence
