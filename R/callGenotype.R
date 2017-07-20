@@ -27,6 +27,7 @@
 #' * N = no stutter
 #' * B = alleles not in balance
 #' * M = multiple alleles
+#' * R = relative contribution of allele(s) to run
 #'
 #' Algorithm is as follows:
 #' - descendingly sort A according to number of reads
@@ -49,7 +50,6 @@
 callGenotype <- function(fb, tbase = NULL, motif = NULL) {
   if (is.null(tbase)) stop("Please provide `tbase` object.")
   if (is.null(motif)) stop("Please provide `motif` object.")
-
   # This is the function which implements core of the algorithm explained in the help file (or see
   # roxygen2 comments above).
 
@@ -60,7 +60,7 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
   stopifnot(length(unique(fb$Plate)) == 1)
 
   # prepare columns to be used for calling/flagging of allele(s)
-  fb$call <- NA
+  fb$call <- ""
   fb$flag <- ""
 
   # 2. if below low run threshold (LRT), add flag "L"
@@ -76,7 +76,7 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
   x.split <- split(fb, f = 1:nrow(fb), drop = TRUE)
 
   cg <- function(x, maxA, fb, tbase, motif) {
-    # prepare thresholds and find locus used down the line
+    # prepare thresholds and find locus
     locus <- unique(fb$Marker)
     stopifnot(length(locus) == 1)
     IT <- fetchTH(tbase, stat = "IT", locus = locus)
@@ -122,8 +122,7 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
     }
     x
   }
-
-  run.A <- sapply(x.split, FUN = cg, maxA = max(x$Read_Count), fb = fb, tbase = tbase,
+  run.A <- sapply(x.split, FUN = cg, maxA = max(fb$Read_Count), fb = fb, tbase = tbase,
                   motif = motif, simplify = FALSE)
 
   # Remove all A which are flagged as non A
@@ -137,7 +136,8 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
   }
 
   # 5. if number of unflagged A > 2, add flag "M" to all alleles
-  if (nrow(run.A) > 2) {
+
+  if (sum(sapply(run.A$flag, nchar) == "") > 2) {
     run.A$flag <- paste(run.A$flag, "M", sep = "")
   }
   run.A
@@ -177,10 +177,15 @@ findStutter <- function(x, fb, motif) {
   found.stt <- cand.stt[new.stt == cand.stt$Sequence, ]
 
   # 3. return candidate stutter allele rowname
+  if (nrow(found.stt) == 0) {
+    message(sprintf("No stutter from allele %s", x$Allele))
+    return(NA)
+  }
   if (nrow(found.stt) == 1) {
-    message(sprintf("Stutter from allele %s", rownames(found.stt)))
+    message(sprintf("From allele %s, stutter %s", x$Allele, rownames(found.stt)))
     return(rownames(found.stt))
-  } else {
+  }
+  if (nrow(found.stt) > 1) {
     warning(sprintf("findStutter: Found multiple stutters for sample %s", x$Sample_Name))
     return(rownames(found.stt))
   }
