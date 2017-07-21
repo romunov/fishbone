@@ -8,7 +8,7 @@
 #' @importFrom ggplot2 ggplot
 #' @importFrom gridExtra grid.arrange
 
-plotRuns <- function(x) {
+prepareRuns <- function(x) {
   if (all(is.na(x))) {
     message("Nothing to draw.")
     return(NA)

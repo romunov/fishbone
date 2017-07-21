@@ -3,7 +3,7 @@
 S3method(head,fishbone)
 S3method(plot,fishbone)
 export(as.fishbone)
-export(plotRuns)
+export(prepareRuns)
 import(ggplot2)
 import(gridExtra)
 importFrom(data.table,as.data.table)
