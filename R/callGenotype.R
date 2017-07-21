@@ -17,29 +17,35 @@
 #' Key for abbreviations:
 #' A = allele
 #' S = stutter
-#' IT = ignore threshold
-#' LRT = low run threshold
-#' B = balance
+#' R = relative low threshold
+#' L = low count threshold
+#' D = disbalance
 #'
 #' The result is appended two columns, one for called A and another for flagged.
 #' Possible flags are:
-#' * L = low run threshold
+#' * L = low amplification threshold
 #' * N = no stutter
-#' * B = alleles not in balance
+#' * D = alleles not in balance
 #' * M = multiple alleles
-#' * R = relative contribution of allele(s) to run
 #'
 #' Algorithm is as follows:
 #' - descendingly sort A according to number of reads
 #' - find number of reads for highest A -> maxA
 #'
-#' for each A:
-#' compare everything according to the highest read count, calculate relative size to maxA -> rs
-#' 1. if signal is below ignore threshold (IT), remove this allele
-#' 2. if below low run threshold (LRT), add flag "L"
-#' 3. if stutter for A found (relative height correct), call, otherwise flag as "N"
-#' 4. if rs <= B, add flag "B"
-#' 5. if number of unflagged A > 2, add flag "M" to all alleles
+# for each A:
+# compare everything according to the highest read count, calculate relative size to maxA -> rs
+#'
+#' 1. pogledamo, če je max A višji od L
+#' 1a. če ni, flagaj vse "L"
+#' 2. najdi najvišji alel
+#' 3. preveri, če ima stutter
+#' 3a. če ima stutter, je to kandidatni alel
+#' 3b. če ima stutter, pa je prenizek (D), mu daj flag "D"
+#' 3c. stutterju dodaj flag $stutter = TRUE (rezultat sta alel in stutter)
+#' 3d. če nima stutterja, preveri absolutno višino
+#' 3da. če je ( > AlleleWithNoStutterHeight) mu daš flag "N"
+#'
+#' Output should be all alleles and their stutters.
 #'
 #' @param fb A `fishbone` object.
 #' column names.
@@ -50,8 +56,7 @@
 callGenotype <- function(fb, tbase = NULL, motif = NULL) {
   if (is.null(tbase)) stop("Please provide `tbase` object.")
   if (is.null(motif)) stop("Please provide `motif` object.")
-  # This is the function which implements core of the algorithm explained in the help file (or see
-  # roxygen2 comments above).
+  # This is the function which implements core of the algorithm explained in the help file.
 
   # This function runs on sample * locus * run combination, which means only one marker per plate.
   locus <- unique(fb$Marker)
@@ -63,11 +68,16 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
   fb$call <- ""
   fb$flag <- ""
 
-  # 2. if below low run threshold (LRT), add flag "L"
-  # Check for LRT from the get go. A calling proceeds like for any other run.
-  LRT <- fetchTH(tbase, stat = "LRT", locus = locus)
+  # prepare statistics
+  L <- fetchTH(tbase, stat = "LowCount", locus = locus)
+  R <- fetchTB(tbase, stat = "RelativeLow", locus = locus)
 
-  if (max(fb$Read_Count) <= LRT) {
+  # 1. remove all alleles which are very low (below [locus specific]% of max read)
+  rel.2.max <- fb$Read_Count/max(fb$Read_Count)
+  fb <- fb[rel.2.max > R, ]
+
+  # 2. if below low run threshold (L), add flag "L"
+  if (max(fb$Read_Count) <= L) {
     fb$flag <- paste(fb$flag, "L", sep = "")
   }
 
@@ -75,12 +85,13 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
   # coerces input to vector which can hold only one type).
   x.split <- split(fb, f = 1:nrow(fb), drop = TRUE)
 
+  # Call this function on every allele.
   cg <- function(x, maxA, fb, tbase, motif) {
     # prepare thresholds and find locus
     locus <- unique(fb$Marker)
     stopifnot(length(locus) == 1)
-    IT <- fetchTH(tbase, stat = "IT", locus = locus)
-    B <- fetchTH(tbase, stat = "B", locus = locus)
+    IT <- fetchTH(tbase, stat = "RelativeLow", locus = locus)
+    B <- fetchTH(tbase, stat = "Disbalance", locus = locus)
 
     # exclude x from `fb` dataset so as not to compare against itself
     id <- rownames(x)
@@ -97,14 +108,6 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
 
     # calculate relative size to maxA
     rs <- x$Read_Count/maxA
-
-    # 1. If signal is below the ignore threshold (IT), remove/ignore A.
-    if (rs <= IT) {
-      return(NULL)
-    }
-
-    # 2. It makes sense to do this step before iterating over all alleles. See code in the
-    # immediate definition of `callGenotype`.
 
     # 3. Find structural stutter for A. If one stutter found, call it, otherwise flag as "N".
     find.stt <- findStutter(x, fb = fb, motif = motif[motif$locus == locus, "motif"])
@@ -193,12 +196,13 @@ findStutter <- function(x, fb, motif) {
 
 #' Fetch threshold values from some database.
 #' @param x A slice of `fishbone` object.
-#' @param stat Which statistic to fetch, e.g. "IT", "B", "S", "LRT".
+#' @param stat Which statistic to fetch, e.g. "RelativeLow", "Disbalance", "Stutter", "LowCount".
 #' @param locus Character. For which locus to fetch statistics?
 #' @author Roman Lustrik (roman.lustri@@biolitika.si)
 
 fetchTH <- function(x, stat, locus) {
-  out <- x[x$stat == stat & x$L == locus, "value"]
+  marker <- gsub("^.*(\\d+)$")
+  out <- x[x$Marker %in% locus, ..stat]
   if (length(out) != 1) stop(sprintf("Unable to fetch %s for locus %s.", stat, locus))
   out
 }

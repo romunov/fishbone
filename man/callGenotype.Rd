@@ -34,7 +34,7 @@ https://doi.org/10.1111/1755-0998.12594
 Key for abbreviations:
 A = allele
 S = stutter
-IT = ignore threshold
+R = relative low threshold
 LRT = low run threshold
 B = balance
 
@@ -52,9 +52,12 @@ Algorithm is as follows:
 
 for each A:
 compare everything according to the highest read count, calculate relative size to maxA -> rs
-1. if signal is below ignore threshold (IT), remove this allele
-2. if below low run threshold (LRT), add flag "L"
+1. if signal is below relative low threshold (R), remove this allele completely
+2. if below low run threshold (LRT), add flag "L" to all alleles
 3. if stutter for A found (relative height correct), call, otherwise flag as "N"
-4. if rs <= B, add flag "B"
+3b. also return stutter
+4. if disbalance in alleles (rs <= B), add flag "B" to low A
 5. if number of unflagged A > 2, add flag "M" to all alleles
+
+Output should be all alleles and their stutters.
 }

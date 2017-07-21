@@ -1,6 +1,7 @@
 #!/usr/bin/env Rscript
 
-# This script will search for specific files on hard drive, read them and call genotypes.
+# This script will (re)run the analysis of calling genotypes based on thresholds provided.
+# output is written to a desired destination.
 
 #### Install packages if missing. ####
 needs.pkg <- c("optparse", "data.table")
