@@ -35,15 +35,26 @@
 # for each A:
 # compare everything according to the highest read count, calculate relative size to maxA -> rs
 #'
+#' 0. find max allele height
+#' 1. check that at least max A is above L threshold
+#' 1a. if not, flag all alleles with "L"
+#' 2. see if allele has stutter
+#' 2a. if yes, mark as called
+#' 2aa. if A in disbalance (A < D), flag as "D"
+#' 2ab. mark stutter as such $stutter = TRUE
+#' 2b. if no, check AlleleWithNoStutterHeight
+#' 2ba. if x > AlleleWithNoStutterHeight, add flag "N"
+#' 2bb. if x < AlleleWithNoStutterHeight, ignore allele
+#'
+#' 0. najdi najvišji alel
 #' 1. pogledamo, če je max A višji od L
 #' 1a. če ni, flagaj vse "L"
-#' 2. najdi najvišji alel
-#' 3. preveri, če ima stutter
-#' 3a. če ima stutter, je to kandidatni alel
-#' 3b. če ima stutter, pa je prenizek (D), mu daj flag "D"
-#' 3c. stutterju dodaj flag $stutter = TRUE (rezultat sta alel in stutter)
-#' 3d. če nima stutterja, preveri absolutno višino
-#' 3da. če je ( > AlleleWithNoStutterHeight) mu daš flag "N"
+#' 2. preveri, če ima stutter
+#' 2a. če ima stutter, je to kandidatni alel
+#' 2aa. če ima stutter, pa je prenizek (D), mu daj flag "D"
+#' 2c. stutterju dodaj flag $stutter = TRUE (rezultat sta alel in stutter)
+#' 2d. če nima stutterja, preveri absolutno višino
+#' 2da. če je ( > AlleleWithNoStutterHeight) mu daš flag "N"
 #'
 #' Output should be all alleles and their stutters.
 #'
@@ -71,6 +82,7 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
   # prepare statistics
   L <- fetchTH(tbase, stat = "LowCount", locus = locus)
   R <- fetchTB(tbase, stat = "RelativeLow", locus = locus)
+  N <- fetchTB(tbase, stat = "AlleleWithNoStutterHeight", locus = locus)
 
   # 1. remove all alleles which are very low (below [locus specific]% of max read)
   rel.2.max <- fb$Read_Count/max(fb$Read_Count)
