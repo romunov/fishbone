@@ -24,7 +24,7 @@ as.fishbone <- function(x, motif) {
   # In case `motif.length` is a data.frame, fetch the motif for the appropriate locus
   # and find the length of the repeat.
   if (is.data.frame(motif)) {
-    motif <- nchar(motif[motif$locus == unique(x$Marker), "motif"])
+    motif <- fetchTH(x = mt, stat = "Repeat", locus = unique(x$Marker))
   }
 
   # If raw motif is provided, count motif length.
@@ -32,10 +32,13 @@ as.fishbone <- function(x, motif) {
     motif <- nchar(motif)
   }
 
-  x$lengths <- as.numeric(gsub("(^\\d+)_(\\d+)$", "\\1", x$Allele))
+  x$lengths <- as.numeric(gsub("(^\\d+)_(\\d+.*)$", "\\1", x$Allele))
   x <- x[order(x$lengths, decreasing = TRUE), ]
 
-  x <- as.data.table(x)
+  if (!is.data.table(x)) {
+    x <- as.data.table(x)
+  }
+
   attr(x, "motif.length") <- motif
   class(x) <- c("fishbone", class(x))
   x

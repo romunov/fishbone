@@ -16,5 +16,5 @@
 # }
 
 head.fishbone <- function(x, ...) {
-  print(head(as.data.table(x)))
+  print(head(as.data.table(x), ...))
 }
