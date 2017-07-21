@@ -32,16 +32,10 @@ as.fishbone <- function(x, motif) {
     motif <- nchar(motif)
   }
 
-  find.sequence <- which.max(sapply(x[1,], nchar))
-  x <- as.data.frame(x)
-  x$seq.preview <- sapply(x[find.sequence], substr, start = 1, stop = 5)
-  x$seq.preview <- paste(x$seq.preview, "...", sep = "")
-
   x$lengths <- as.numeric(gsub("(^\\d+)_(\\d+)$", "\\1", x$Allele))
-  x$poly <- as.numeric(gsub("(^\\d+)_(\\d+)$", "\\2", x$Allele)) # variant of allele
-  x <- x[order(x$lengths, rev(x$poly), decreasing = TRUE), ]
+  x <- x[order(x$lengths, decreasing = TRUE), ]
 
-  attr(x, "sequence") <- find.sequence
+  x <- as.data.table(x)
   attr(x, "motif.length") <- motif
   class(x) <- c("fishbone", class(x))
   x

@@ -4,12 +4,21 @@
 \alias{as.fishbone}
 \title{Coerces a data.frame (like object) to a `fishbone` object.}
 \usage{
-as.fishbone(x, motif.length)
+as.fishbone(x, motif)
 }
 \arguments{
 \item{x}{Object of class \code{data.frame} or similar.}
 
-\item{motif.length}{Integer. Length of the repeating motif, locus specific.}
+\item{motif}{Integer or data.frame or character. Length of the repeating motif, locus specific.
+Motif (raw, e.g. "ctat") can also be provided in the form of a character. If a data.frame provided, it
+should have two columns:
+locus (exact locus name, e.g. "03")
+motif (motif, eg.. "ctat")}
+}
+\value{
+It adds an extra column with shortened sequence to enable pretty printing. It also
+adds two more columns, namely `length` which reads sequence length and `poly` which is the
+variation of the allele.
 }
 \description{
 Expected columns are Sample_Name, Plate, Marker, Read_Count, Allele, Sequence.

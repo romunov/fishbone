@@ -7,8 +7,14 @@
 #' @param x Object of class \code{fishbone}.
 #' @param ... Currently not used.
 #'
+#' @importFrom data.table as.data.table
+#'
 #' @author Roman Lustrik (roman.lustrik@@biolitika.si)
 #' @export
-print.fishbone <- function(x, ...) {
-  print.data.frame(x[, -attr(x, "sequence")])
+# print.fishbone <- function(x, ...) {
+#   print(head(as.data.table(x)))
+# }
+
+head.fishbone <- function(x, ...) {
+  print(head(as.data.table(x)))
 }
