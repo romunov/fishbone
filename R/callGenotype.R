@@ -78,18 +78,18 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
   # prepare columns to be used for calling/flagging of allele(s)
   fb$call <- ""
   fb$flag <- ""
+  fb$stutter <- ""
 
   # prepare statistics
   L <- fetchTH(tbase, stat = "LowCount", locus = locus)
   R <- fetchTB(tbase, stat = "RelativeLow", locus = locus)
   N <- fetchTB(tbase, stat = "AlleleWithNoStutterHeight", locus = locus)
 
-  # 1. remove all alleles which are very low (below [locus specific]% of max read)
-  rel.2.max <- fb$Read_Count/max(fb$Read_Count)
-  fb <- fb[rel.2.max > R, ]
+  # 0. find max allele height
+  maxA <- max(fb$Read_Count)
 
-  # 2. if below low run threshold (L), add flag "L"
-  if (max(fb$Read_Count) <= L) {
+  # 1. check that at least max A is above L threshold
+  if (maxA <= L) {
     fb$flag <- paste(fb$flag, "L", sep = "")
   }
 
@@ -99,11 +99,11 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
 
   # Call this function on every allele.
   cg <- function(x, maxA, fb, tbase, motif) {
+
     # prepare thresholds and find locus
     locus <- unique(fb$Marker)
     stopifnot(length(locus) == 1)
-    IT <- fetchTH(tbase, stat = "RelativeLow", locus = locus)
-    B <- fetchTH(tbase, stat = "Disbalance", locus = locus)
+    D <- fetchTH(tbase, stat = "Disbalance", locus = locus)
 
     # exclude x from `fb` dataset so as not to compare against itself
     id <- rownames(x)
@@ -117,18 +117,19 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
     } else {
       fb <- fb.noself
     }
+    # 2. see if allele has stutter
+    find.stt <- findStutter(x, fb = fb, motif = motif[motif$locus == locus, "motif"])
+
+    # 2a. if yes, mark as called
+    # TODO: ostal tu
+    if (length(find.stt) == 1 & is.character(find.stt)) {
+      x$call <- "called"
+      fb[rownames(fb) %in % find.stt, "stutter"] <- TRUE
+    }
+    # 2aa. če ima stutter, pa je prenizek (D), mu daj flag "D"
 
     # calculate relative size to maxA
     rs <- x$Read_Count/maxA
-
-    # 3. Find structural stutter for A. If one stutter found, call it, otherwise flag as "N".
-    find.stt <- findStutter(x, fb = fb, motif = motif[motif$locus == locus, "motif"])
-
-    if (is.character(find.stt)) {
-      x$call <- "called"
-    } else {
-      x$flag <- paste(x$flag, "N", sep = "")
-    }
 
     # 4. Check if alleles are in high disequilibrium. We would expect for heterozygots
     # to have equal number of reads per allele, but do not due to whatever reasons.
@@ -137,7 +138,7 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
     }
     x
   }
-  run.A <- sapply(x.split, FUN = cg, maxA = max(fb$Read_Count), fb = fb, tbase = tbase,
+  run.A <- sapply(x.split, FUN = cg, maxA = maxA, fb = fb, tbase = tbase,
                   motif = motif, simplify = FALSE)
 
   # Remove all A which are flagged as non A
@@ -163,7 +164,8 @@ callGenotype <- function(fb, tbase = NULL, motif = NULL) {
 #' From a `fishbone` object, try to find a stutter.
 #' @param x A `fishbone` object.
 #' @param fb A `fishbone` object with cancidate stutter alleles.
-#' @return A character string of the row name of the stutter(s).
+#' @return A character string of the row name of the stutter(s). If stutter is not found, it
+#' returns an NA.
 #' @author Roman Lustrik (roman.lustrik@@biolitika.si)
 
 findStutter <- function(x, fb, motif) {
@@ -185,7 +187,7 @@ findStutter <- function(x, fb, motif) {
   motif.length <- nchar(motif)
   cand.stt <- fb[fb$lengths == (x$lengths - motif.length), ]
 
-  if (nrow(cand.stt) < 1) {
+  if (nrow(cand.stt) == 0) {
     return(FALSE)
   }
 
