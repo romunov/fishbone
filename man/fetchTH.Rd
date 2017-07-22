@@ -9,7 +9,7 @@ fetchTH(x, stat, locus)
 \arguments{
 \item{x}{A slice of `fishbone` object.}
 
-\item{stat}{Which statistic to fetch, e.g. "IT", "B", "S", "LRT".}
+\item{stat}{Which statistic to fetch, e.g. "RelativeLow", "Disbalance", "Stutter", "LowCount".}
 
 \item{locus}{Character. For which locus to fetch statistics?}
 }

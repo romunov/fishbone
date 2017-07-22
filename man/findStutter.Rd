@@ -12,7 +12,8 @@ findStutter(x, fb, motif)
 \item{fb}{A `fishbone` object with cancidate stutter alleles.}
 }
 \value{
-A character string of the row name of the stutter(s).
+A character string of the row name of the stutter(s). If stutter is not found, it
+returns NULL.
 }
 \description{
 From a `fishbone` object, try to find a stutter.

@@ -35,29 +35,31 @@ Key for abbreviations:
 A = allele
 S = stutter
 R = relative low threshold
-LRT = low run threshold
-B = balance
+L = low count threshold
+D = disbalance
 
 The result is appended two columns, one for called A and another for flagged.
 Possible flags are:
-* L = low run threshold
+* L = low amplification threshold
 * N = no stutter
-* B = alleles not in balance
+* D = alleles not in balance
 * M = multiple alleles
-* R = relative contribution of allele(s) to run
 
 Algorithm is as follows:
 - descendingly sort A according to number of reads
 - find number of reads for highest A -> maxA
 
-for each A:
-compare everything according to the highest read count, calculate relative size to maxA -> rs
-1. if signal is below relative low threshold (R), remove this allele completely
-2. if below low run threshold (LRT), add flag "L" to all alleles
-3. if stutter for A found (relative height correct), call, otherwise flag as "N"
-3b. also return stutter
-4. if disbalance in alleles (rs <= B), add flag "B" to low A
-5. if number of unflagged A > 2, add flag "M" to all alleles
+0. find max allele height
+1. check that at least max A is above L threshold
+1a. if not, flag all alleles with "L"
+2. see if allele has stutter
+2a. if yes, mark as called
+2aa. if A in disbalance (A < D), flag as "D"
+2ab. mark stutter as such $stutter = TRUE
+2b. if no, check AlleleWithNoStutterHeight
+2ba. if x > AlleleWithNoStutterHeight, add flag "N"
+2bb. if x < AlleleWithNoStutterHeight, ignore allele
+3. if number of unflagged alleles is more than 2, add flag "M" to all
 
 Output should be all alleles and their stutters.
 }
