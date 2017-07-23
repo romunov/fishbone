@@ -55,7 +55,7 @@
 #' ignore threshold (IT), low run threshold (LRT) and relative stutter height (S).
 #' @param motif A data.frame of loci motifs. Expected two columns with loci names (`locus`) and actual motifs (`motif`).
 
-callGenotype <- function(fb, tbase = NULL, motif = NULL) {
+callAllele <- function(fb, tbase = NULL, motif = NULL) {
   if (is.null(tbase)) stop("Please provide `tbase` object.")
   if (is.null(motif)) stop("Please provide `motif` object.")
   # This is the function which implements core of the algorithm explained in the help file.

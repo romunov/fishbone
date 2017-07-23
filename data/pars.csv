@@ -1,6 +1,6 @@
-Marker	Repeat	Stutter	Disbalance	LowCount AlleleWithNoStutterHeight
+Marker	Repeat	Stutter	Disbalance	LowCount	AlleleWithNoStutterHeight
 03	ctat	0,05	0,33	100	100
-06	aagg	0,05	0,33	100 100
+06	aagg	0,05	0,33	100	100
 14	tttta	0,05	0,33	100	100
 16	cttt	0,05	0,33	100	100
 17	cttt	0,05	0,33	100	100
