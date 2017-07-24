@@ -3,7 +3,7 @@ devtools::load_all()
 
 library(data.table)
 library(gridExtra)
-# devtools::use_package("gridExtra")
+# devtools::use_package("stringi")
 
 # extract data for one sample
 # library(readxl)
@@ -25,32 +25,12 @@ library(gridExtra)
 # me <- list2env(x)
 # save(me, file = "./sandbox/samples.RData")
 
-tbase <- read.table("sandbox/thresholds.csv", sep = "\t", dec = ",", header = TRUE,
-                    colClasses = c("character", "character", "numeric"))
-mymotif <- read.table("sandbox/motifs.csv", sep = "\t", header = TRUE,
-                      colClasses = "character")
-#
-load("./sandbox/samples.RData")
-x <- as.fishbone(me$m.03.8, motif = mymotif)
-plot(x)
-
-#####
 mt <- fread("./data/pars.csv", dec = ",",
-            colClasses = list(character = c(1, 2, 3), numeric = c(4, 5, 6, 7)),
-            stringsAsFactors = FALSE)
+            colClasses = list(character = c(1, 2), numeric = c(3, 4, 5, 6)),
+            stringsAsFactors = FALSE, header = TRUE)
 x <- fread("./sandbox/EM.1CPA.txt",
-           colClasses = list(character = c(1, 4, 5, 6, 7, 8, 9, 10), numeric = c(2, 3)))
+           colClasses = list(character = c(1, 4, 5, 7), numeric = c(2, 3, 6)))
 
-x <- split(x, f = list(x$Sample_Name, x$Marker))
+x <- split(x, f = list(x$Sample_Name, x$Marker, x$Plate))
 
-i <- 1
-g1 <- x[[i]]
-g1 <- split(g1, f = g1$Plate)
-g1 <- sapply(g1, as.fishbone, motif = mt, simplify = FALSE)
-plot(g1[[1]])
-plot(prepareRuns(g1))
-
-
-g1[[1]]
-g2 <- g1[[1]]
-g2$Read_Count/max(g2$Read_Count)
+callAllele(fb = x[[8]], tbase = mt)

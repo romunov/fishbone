@@ -6,10 +6,11 @@ Authors@R: c(person("Roman", "Lustrik", role = c("aut", "cre"), email = "roman.l
 Maintainer: Roman Lustrik <roman.lustrik@biolitika.si>
 Description: Assuming you have read count for samples/loci in more than one run, you can call alleles with the help of this package.
 License: GPL-2
-Imports: 
+Imports:
     ggplot2 (>= 2.2.1),
     gridExtra,
-    data.table (>= 1.10.4)
+    data.table (>= 1.10.4),
+    stringi
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
