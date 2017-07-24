@@ -33,4 +33,7 @@ x <- fread("./sandbox/EM.1CPA.txt",
 
 x <- split(x, f = list(x$Sample_Name, x$Marker, x$Plate))
 
-callAllele(fb = x[[8]], tbase = mt)
+callAllele(fb = x[[1]], tbase = mt)
+callAllele(fb = x[[14]], tbase = mt)
+callAllele(fb = x[[27]], tbase = mt)
+callAllele(fb = x[[40]], tbase = mt)
