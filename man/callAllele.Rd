@@ -4,50 +4,48 @@
 \alias{callAllele}
 \title{Automatically call or flag alleles from NGS data}
 \usage{
-callAllele(fb, tbase = NULL, motif = NULL)
+callAllele(fb, tbase = NULL)
 }
 \arguments{
 \item{fb}{A `fishbone` object.
 column names.}
 
-\item{tbase}{A data.frame with thresholds which are locus specific. Thresholds are balance of alleles (B),
-ignore threshold (IT), low run threshold (LRT) and relative stutter height (S).}
-
-\item{motif}{A data.frame of loci motifs. Expected two columns with loci names (`locus`) and actual motifs (`motif`).}
+\item{tbase}{A data.frame with thresholds which are locus specific. Thresholds are:
+- stutter (if lower than this, allele is ignored as stutter)
+- disbalance (if heterozygous alleles are not in 1:1 ratio)
+- low count (anything below this threshold gets flagged as light on read count)
+- allele with no stutter height (if no stutter is found, how many reads do we allow for alleles
+to be called)}
 }
 \description{
 Call or flag candidate alleles to construct a consensus genotype.
 }
 \details{
-Function works on an individual run (one PCR reaction). Use R functionality to
-apply this to sample * locus * run combination. The data should come from an NGS run as
-processed by de Barba et al. (2016).
+Function works on an individual run (one PCR reaction). Apply this to sample * locus * run combination.
+The data should come from an NGS run as processed by de Barba et al. (2016).
 
-A note o finding stutters: For each candidate allele the sequence is shortened for the first
-motif found given the locus.
+For algorithm used to find stutters, see `?findStutter`.
 
 De Barba, M., Miquel, C., Lobréaux, S., Quenette, P. Y., Swenson, J. E., & Taberlet, P. (2016).
 High-throughput microsatellite genotyping in ecology: improved accuracy, efficiency, standardization
 and success with low-quantity and degraded DNA. Molecular Ecology Resources, 1–16.
 https://doi.org/10.1111/1755-0998.12594
 
-Key for abbreviations:
+Key for abbreviations used in (pseudo)code:
 A = allele
 S = stutter
 R = relative low threshold
 L = low count threshold
 D = disbalance
 
-The result is appended two columns, one for called A and another for flagged.
+The result is appended three columns; one for called A, one for flagged alleles and if read is a stutter.
 Possible flags are:
-* L = low amplification threshold
-* N = no stutter
-* D = alleles not in balance
-* M = multiple alleles
+* L = low amplification threshold (if for some reason, number of total reads is very low, alleles get a flag)
+* N = no stutter (if there was enough reads but no stutter was present)
+* D = disbalance - alleles not in balance (expecting 1:1 for heterozygotes, those out of balance flagged)
+* M = multiple alleles (self explanatory)
 
 Algorithm is as follows:
-- descendingly sort A according to number of reads
-- find number of reads for highest A -> maxA
 
 0. find max allele height
 1. check that at least max A is above L threshold
