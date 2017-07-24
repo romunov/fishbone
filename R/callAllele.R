@@ -53,8 +53,9 @@
 #' - low count (anything below this threshold gets flagged as light on read count)
 #' - allele with no stutter height (if no stutter is found, how many reads do we allow for alleles
 #' to be called)
+#' @param clean Logical. If TRUE (default), it will return only called alleles and their stutters.
 
-callAllele <- function(fb, tbase = NULL) {
+callAllele <- function(fb, tbase = NULL, clean = TRUE) {
   if (is.null(tbase)) stop("Please provide `tbase` object.")
   # This is the function which implements core of the algorithm explained in the help file.
   # This function runs on sample * locus * run combination, which means only one marker per plate.
@@ -124,7 +125,10 @@ callAllele <- function(fb, tbase = NULL) {
   out.ord <- c("Sample_Name", "Plate", "Read_Count", "Marker", "Run_Name", "length",
                "Position", "called", "flag", "stutter", "Sequence")
   fb <- fb[, ..out.ord]
-  # fb$length <- NULL
-  fb
-  # fb[fb$called | fb$stutter, ]
+
+  if (clean) {
+    fb[fb$called | fb$stutter, ]
+  } else {
+    fb
+  }
 }
