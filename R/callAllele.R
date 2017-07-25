@@ -46,7 +46,6 @@
 #' Output should be all alleles and their stutters.
 #'
 #' @param fb A `fishbone` object.
-#' column names.
 #' @param tbase A data.frame with thresholds which are locus specific. Thresholds are:
 #' - stutter (if lower than this, allele is ignored as stutter)
 #' - disbalance (if heterozygous alleles are not in 1:1 ratio)
@@ -54,6 +53,7 @@
 #' - allele with no stutter height (if no stutter is found, how many reads do we allow for alleles
 #' to be called)
 #' @param clean Logical. If TRUE (default), it will return only called alleles and their stutters.
+#' @export
 
 callAllele <- function(fb, tbase = NULL, clean = TRUE) {
   if (is.null(tbase)) stop("Please provide `tbase` object.")

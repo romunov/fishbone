@@ -3,6 +3,7 @@
 S3method(head,fishbone)
 S3method(plot,fishbone)
 export(as.fishbone)
+export(callAllele)
 export(prepareRuns)
 import(ggplot2)
 import(gridExtra)

@@ -7,8 +7,7 @@
 callAllele(fb, tbase = NULL, clean = TRUE)
 }
 \arguments{
-\item{fb}{A `fishbone` object.
-column names.}
+\item{fb}{A `fishbone` object.}
 
 \item{tbase}{A data.frame with thresholds which are locus specific. Thresholds are:
 - stutter (if lower than this, allele is ignored as stutter)
