@@ -4,7 +4,7 @@
 \alias{callAllele}
 \title{Automatically call or flag alleles from NGS data}
 \usage{
-callAllele(fb, tbase = NULL)
+callAllele(fb, tbase = NULL, clean = TRUE)
 }
 \arguments{
 \item{fb}{A `fishbone` object.
@@ -16,6 +16,8 @@ column names.}
 - low count (anything below this threshold gets flagged as light on read count)
 - allele with no stutter height (if no stutter is found, how many reads do we allow for alleles
 to be called)}
+
+\item{clean}{Logical. If TRUE (default), it will return only called alleles and their stutters.}
 }
 \description{
 Call or flag candidate alleles to construct a consensus genotype.
