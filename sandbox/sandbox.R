@@ -3,7 +3,7 @@ devtools::load_all()
 
 library(data.table)
 library(gridExtra)
-# devtools::use_package("stringi")
+devtools::use_package("data.table")
 
 # extract data for one sample
 # library(readxl)

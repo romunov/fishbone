@@ -54,6 +54,8 @@
 #' to be called)
 #' @param clean Logical. If TRUE (default), it will return only called alleles and their stutters.
 #' @export
+#' @importFrom data.table ":="
+#' @import data.table
 
 callAllele <- function(fb, tbase = NULL, clean = TRUE) {
   if (is.null(tbase)) stop("Please provide `tbase` object.")
