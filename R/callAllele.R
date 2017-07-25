@@ -62,6 +62,8 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE) {
   # This is the function which implements core of the algorithm explained in the help file.
   # This function runs on sample * locus * run combination, which means only one marker per plate.
   locus <- unique(fb$Marker)
+  sn <- unique(fb$Sample_Name)
+  plate <- unique(fb$Plate)
   stopifnot(length(locus) == 1)
   stopifnot(length(unique(fb$Plate)) == 1)
 
@@ -129,8 +131,13 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE) {
   fb <- fb[, ..out.ord]
 
   if (clean) {
-    fb[fb$called | fb$stutter, ]
+    out <- fb[fb$called | fb$stutter, ]
   } else {
-    fb
+    out <- fb
   }
+
+  if (nrow(out) == 0) {
+    out <- sprintf("sample: %s; locus: %s; plate: %s", sn, locus, plate)
+  }
+  out
 }
