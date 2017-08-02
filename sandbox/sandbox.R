@@ -31,9 +31,8 @@ mt <- fread("./data/pars.csv", dec = ",",
 x <- fread("./sandbox/EM.1CPA.txt",
            colClasses = list(character = c(1, 4, 5, 7), numeric = c(2, 3, 6)))
 
-x <- split(x, f = list(x$Sample_Name, x$Marker, x$Plate))
+head(x)
+system.time(out <- x[, callAllele(c(.BY, .SD), tbase = mt), by = .(Sample_Name, Marker, Plate)])
 
-callAllele(fb = x[[1]], tbase = mt)
-callAllele(fb = x[[14]], tbase = mt)
-callAllele(fb = x[[27]], tbase = mt)
-callAllele(fb = x[[40]], tbase = mt)
+xs <- split(x, f = list(x$Sample_Name, x$Marker, x$Plate))
+system.time(out2 <- sapply(xs, callAllele, tbase = mt))

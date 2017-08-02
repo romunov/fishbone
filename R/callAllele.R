@@ -58,6 +58,11 @@
 #' @import data.table
 
 callAllele <- function(fb, tbase = NULL, clean = TRUE) {
+  # In case the object is not a data.table, make it one.
+  if (all(class(fb) != "data.table")) {
+    fb <- as.data.table(fb)
+  }
+
   if (is.null(tbase)) stop("Please provide `tbase` object.")
   # This is the function which implements core of the algorithm explained in the help file.
   # This function runs on sample * locus * run combination, which means only one marker per plate.
@@ -74,7 +79,6 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE) {
   fb[, flag := ""]
   fb[, stutter := FALSE]
 
-  # browser()
   # We need this because data.table doesn't support row names, see https://stackoverflow.com/a/24246819/322912
   fb$fbid <- as.character(1:nrow(fb))
 
