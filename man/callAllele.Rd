@@ -4,7 +4,7 @@
 \alias{callAllele}
 \title{Automatically call or flag alleles from NGS data}
 \usage{
-callAllele(fb, tbase = NULL, clean = TRUE)
+callAllele(fb, tbase = NULL, clean = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{fb}{A `fishbone` object.}
@@ -17,6 +17,8 @@ callAllele(fb, tbase = NULL, clean = TRUE)
 to be called)}
 
 \item{clean}{Logical. If TRUE (default), it will return only called alleles and their stutters.}
+
+\item{verbose}{Logical. If true, it will print which sample is being processed.}
 }
 \description{
 Call or flag candidate alleles to construct a consensus genotype.

@@ -53,6 +53,8 @@
 #' - allele with no stutter height (if no stutter is found, how many reads do we allow for alleles
 #' to be called)
 #' @param clean Logical. If TRUE (default), it will return only called alleles and their stutters.
+#' @param verbose Logical. If true, it will print which sample is being processed.
+#'
 #' @export
 #' @importFrom data.table ":="
 #' @import data.table
