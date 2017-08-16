@@ -3,27 +3,7 @@ devtools::load_all()
 
 library(data.table)
 library(gridExtra)
-devtools::use_package("data.table")
-
-# extract data for one sample
-# library(readxl)
-# xy <- read_excel("./data/genotypes_dinalpbear_gatc_notrash.xlsx")
-# xy$Marker <- sprintf("%02d", xy$Marker)
-# xy$Run_Name <- NULL
-# xy$Sample_ID <- NULL
-# xy$TagCombo <- NULL
-# xy$Position <- NULL
-#
-# m1 <- as.data.frame(xy[(xy$Sample_Name %in% "M0P0K.MM") & (xy$Plate %in% 1:8), ])
-# m1$Run_Name <- NULL
-# m1$Sample_ID <- NULL
-# m1$TagCombo <- NULL
-# m1$old_Allele <- NULL
-# m1$Position <- NULL
-# x <- split(m1, f = list(m1$Marker))
-# names(x) <- paste("m.", names(x), sep = "")
-# me <- list2env(x)
-# save(me, file = "./sandbox/samples.RData")
+# devtools::use_package("data.table")
 
 mt <- fread("./data/pars.csv", dec = ",",
             colClasses = list(character = c(1, 2), numeric = c(3, 4, 5, 6)),
@@ -33,6 +13,3 @@ x <- fread("./sandbox/EM.1CPA.txt",
 
 head(x)
 system.time(out <- x[, callAllele(c(.BY, .SD), tbase = mt), by = .(Sample_Name, Marker, Plate)])
-
-xs <- split(x, f = list(x$Sample_Name, x$Marker, x$Plate))
-system.time(out2 <- sapply(xs, callAllele, tbase = mt))
