@@ -57,7 +57,8 @@
 #' @importFrom data.table ":="
 #' @import data.table
 
-callAllele <- function(fb, tbase = NULL, clean = TRUE) {
+callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
+
   # In case the object is not a data.table, make it one.
   if (all(class(fb) != "data.table")) {
     fb <- as.data.table(fb)
@@ -69,10 +70,21 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE) {
   locus <- unique(fb$Marker)
   sn <- unique(fb$Sample_Name)
   plate <- unique(fb$Plate)
+  rn <- unique(fb$Run_Name)
+  ps <- unique(fb$Position)
 
+  proc.info <- sprintf("sample: %s; locus: %s; plate: %s", sn, locus, plate)
+  if (verbose) {
+    message(proc.info)
+  }
+
+  # Prepare an empty object in case there are no reads, one way or the other.
+  out.blank <- data.table(Sample_Name = sn, Plate = plate, Read_Count = as.integer(NA),
+                          Marker = locus, Run_Name = rn, length = as.double(NA),
+                          Position = ps,called = FALSE, flag = "", stutter = FALSE,
+                          Sequence = "")
   if (nrow(fb) == 0) {
-    out <- sprintf("sample: %s; locus: %s; plate: %s", sn, locus, plate)
-    return(out)
+    return(out.blank)
   }
 
   stopifnot(length(locus) == 1)
@@ -136,6 +148,8 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE) {
   }
 
   fb <- fb[order(fb$length, decreasing = TRUE), ]
+
+  # Sort columns in a more readable fashion (by e.g. keeping Sequence last).
   out.ord <- c("Sample_Name", "Plate", "Read_Count", "Marker", "Run_Name", "length",
                "Position", "called", "flag", "stutter", "Sequence")
   fb <- fb[, ..out.ord]
@@ -147,7 +161,8 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE) {
   }
 
   if (nrow(out) == 0) {
-    out <- sprintf("sample: %s; locus: %s; plate: %s", sn, locus, plate)
+    # out <- sprintf("sample: %s; locus: %s; plate: %s", sn, locus, plate)
+    return(out.blank)
   }
   out
 }
