@@ -80,15 +80,6 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
     message(proc.info)
   }
 
-  # Prepare an empty object in case there are no reads, one way or the other.
-  out.blank <- data.table(Sample_Name = sn, Plate = plate, Read_Count = as.integer(NA),
-                          Marker = locus, Run_Name = rn, length = as.double(NA),
-                          Position = ps,called = FALSE, flag = "", stutter = FALSE,
-                          Sequence = "")
-  if (nrow(fb) == 0) {
-    return(out.blank)
-  }
-
   stopifnot(length(locus) == 1)
   stopifnot(length(plate) == 1)
 
@@ -98,6 +89,18 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
   fb[, called := FALSE]
   fb[, flag := ""]
   fb[, stutter := FALSE]
+
+  # Prepare an empty object in case there are no reads, one way or the other.
+  out.blank <- fb[0, ]
+
+  out.ord <- c("Sample_Name", "Plate", "Read_Count", "Marker", "Run_Name", "length",
+               "Position", "called", "flag", "stutter", "Sequence", "TagCombo")
+
+  out.blank <- out.blank[, ..out.ord]
+
+  if (nrow(fb) == 0) {
+    return(out.blank)
+  }
 
   # We need this because data.table doesn't support row names, see https://stackoverflow.com/a/24246819/322912
   fb$fbid <- as.character(1:nrow(fb))
@@ -152,10 +155,9 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
   fb <- fb[order(fb$length, decreasing = TRUE), ]
 
   # Sort columns in a more readable fashion (by e.g. keeping Sequence last).
-  out.ord <- c("Sample_Name", "Plate", "Read_Count", "Marker", "Run_Name", "length",
-               "Position", "called", "flag", "stutter", "Sequence")
   fb <- fb[, ..out.ord]
 
+  # If clean == TRUE, return only sequences which were tagged as allele or stutter
   if (clean) {
     out <- fb[fb$called | fb$stutter, ]
   } else {
