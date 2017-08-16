@@ -63,6 +63,11 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE) {
     fb <- as.data.table(fb)
   }
 
+  if (nrow(fb) == 0) {
+    out <- sprintf("sample: %s; locus: %s; plate: %s", sn, locus, plate)
+    return(out)
+  }
+
   if (is.null(tbase)) stop("Please provide `tbase` object.")
   # This is the function which implements core of the algorithm explained in the help file.
   # This function runs on sample * locus * run combination, which means only one marker per plate.
