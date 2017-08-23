@@ -10,6 +10,8 @@ findStutter(x, fb, motif)
 \item{x}{A `fishbone` object.}
 
 \item{fb}{A `fishbone` object with cancidate stutter alleles.}
+
+\item{motif}{Character. Motif of the repeat.}
 }
 \value{
 A character string of stutter(s) ID. If stutter is not found, it

@@ -86,6 +86,12 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
   motif <- tbase[tbase$Marker %in% locus, "Repeat"]
 
   # prepare columns to be used for calling/flagging of allele(s)
+  # define because R CMD check produces a NOTE if these variables are not defined somewhere
+  called <- NULL
+  flag <- NULL
+  stutter <- NULL
+  ..out.ord <- NULL
+
   fb[, called := FALSE]
   fb[, flag := ""]
   fb[, stutter := FALSE]

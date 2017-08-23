@@ -1,4 +1,4 @@
-# roxygen2::roxygenize()
+roxygen2::roxygenize()
 devtools::load_all()
 
 library(data.table)

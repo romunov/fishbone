@@ -18,6 +18,7 @@
 #'
 #' @param x A `fishbone` object.
 #' @param fb A `fishbone` object with cancidate stutter alleles.
+#' @param motif Character. Motif of the repeat.
 #' @return A character string of stutter(s) ID. If stutter is not found, it
 #' returns NULL.
 #' @importFrom stringi stri_locate_all_fixed stri_count stri_reverse stri_locate_all
