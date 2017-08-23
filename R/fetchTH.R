@@ -5,9 +5,7 @@
 #' @author Roman Lustrik (roman.lustri@@biolitika.si)
 
 fetchTH <- function(x, stat, locus) {
-  ..stat <- NULL # needed so that package passes R CMD check
-
-  out <- x[x$Marker %in% locus, ..stat]
+  out <- x[x$Marker %in% locus, stat, with = FALSE]
   if (length(out) != 1) stop(sprintf("Unable to fetch %s for locus %s.", stat, locus))
   out
 }
