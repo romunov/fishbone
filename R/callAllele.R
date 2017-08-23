@@ -90,7 +90,6 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
   called <- NULL
   flag <- NULL
   stutter <- NULL
-  ..out.ord <- NULL
 
   fb[, called := FALSE]
   fb[, flag := ""]
@@ -102,7 +101,7 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
   out.ord <- c("Sample_Name", "Plate", "Read_Count", "Marker", "Run_Name", "length",
                "Position", "called", "flag", "stutter", "Sequence", "TagCombo")
 
-  out.blank <- out.blank[, ..out.ord]
+  out.blank <- out.blank[, out.ord, with = FALSE]
 
   if (nrow(fb) == 0) {
     return(out.blank)
@@ -169,7 +168,7 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
   fb <- fb[order(fb$length, decreasing = TRUE), ]
 
   # Sort columns in a more readable fashion (by e.g. keeping Sequence last).
-  fb <- fb[, ..out.ord]
+  fb <- fb[, out.ord, with = FALSE]
 
   # If clean == TRUE, return only sequences which were tagged as allele or stutter
   if (clean) {
