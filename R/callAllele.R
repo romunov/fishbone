@@ -41,7 +41,7 @@
 #' 2b. if no, check AlleleWithNoStutterHeight
 #' 2ba. if x > AlleleWithNoStutterHeight, add flag "N"
 #' 2bb. if x < AlleleWithNoStutterHeight, ignore allele
-#' 3. if number of unflagged alleles is more than 2, add flag "M" to all
+#' 3. if number of unflagged alleles is more than 2 (those marked with D are not counted), add flag "M" to all
 #'
 #' Output should be all alleles and their stutters.
 #'
@@ -147,7 +147,15 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
   }
 
   # 3. if number of unflagged A > 2, add flag "M" to all alleles
+  #    Do not include alleles with D as true called alleles, this
+  #    should minimize number of called multiple alleles where stutters
+  #    are actually higher than expected as specified in `pars.csv` table.
   calledA <- fb$called
+
+  # if alleles have flag D, do not consider them as true alleles because
+  # they may be just "too high" stutters
+  calledA[grepl("D", fb$flag)] <- FALSE
+
   if (sum(calledA, na.rm = TRUE) > 2) {
     fb[i = calledA, flag := paste(fb[calledA, j = flag], "M", sep = "")]
   }
