@@ -60,7 +60,7 @@ Algorithm is as follows:
 2b. if no, check AlleleWithNoStutterHeight
 2ba. if x > AlleleWithNoStutterHeight, add flag "N"
 2bb. if x < AlleleWithNoStutterHeight, ignore allele
-3. if number of unflagged alleles is more than 2, add flag "M" to all
+3. if number of unflagged alleles is more than 2 (those marked with D are not counted), add flag "M" to all
 
 Output should be all alleles and their stutters.
 }
