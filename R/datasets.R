@@ -6,7 +6,19 @@
 #' itself.
 #' @docType data
 #' @usage smp_m0tcu
-#' @format a \code{RangedData} instance, 1 row per CpG island.
+#' @format A data.table.
+#' @source LIFE DinAlpBear project
+#' @keywords dataset
+#' @author Roman Lustrik, Tomaz Skrbinsek, Maja Jelencic, Meta Konec
+NULL
+
+#' @name mt
+#' @title Lookup table of calling parameters
+#' @description Algorithm of calling alleles uses some prio information about alleles and stutters.
+#' This table provide these values. Tweak or create according to your needs.
+#' @docType data
+#' @usage mt
+#' @format A data.table.
 #' @source LIFE DinAlpBear project
 #' @keywords dataset
 #' @author Roman Lustrik, Tomaz Skrbinsek, Maja Jelencic, Meta Konec
