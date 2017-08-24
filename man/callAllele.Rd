@@ -51,8 +51,7 @@ Possible flags are:
 Algorithm is as follows:
 
 0. find max allele height
-1. check that at least max A is above L threshold
-1a. if not, flag all alleles with "L"
+1. if allele has number of reads < L, flag it as "L"
 2. see if allele has stutter
 2a. if yes, mark as called
 2aa. if A in disbalance (A < D), flag as "D"

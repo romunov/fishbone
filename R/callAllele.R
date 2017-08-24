@@ -32,8 +32,7 @@
 # compare everything according to the highest read count, calculate relative size to maxA -> rs
 #'
 #' 0. find max allele height
-#' 1. check that at least max A is above L threshold
-#' 1a. if not, flag all alleles with "L"
+#' 1. if allele has number of reads < L, flag it as "L"
 #' 2. see if allele has stutter
 #' 2a. if yes, mark as called
 #' 2aa. if A in disbalance (A < D), flag as "D"
@@ -119,10 +118,8 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
   # 0. find max allele height
   maxA <- max(fb$Read_Count)
 
-  # 1. check that at least max A is above L threshold
-  if (maxA <= L) {
-    fb$flag <- paste(fb$flag, "L", sep = "")
-  }
+  # 1. if allele has number of reads < L, flag it as "L"
+  # (performed towards the end)
 
   for (i in 1:nrow(fb)) {
     rh <- (fb$Read_Count[i]/maxA)
@@ -169,6 +166,9 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
 
   # Sort columns in a more readable fashion (by e.g. keeping Sequence last).
   fb <- fb[, out.ord, with = FALSE]
+
+  # 1. if allele has number of reads < L, flag it as "L"
+  fb[Read_Count < as.numeric(L) & called == TRUE, flag := paste(flag, "L", sep = "")]
 
   # If clean == TRUE, return only sequences which were tagged as allele or stutter
   if (clean) {

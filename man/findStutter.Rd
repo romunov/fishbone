@@ -9,7 +9,7 @@ findStutter(x, fb, motif)
 \arguments{
 \item{x}{A `fishbone` object.}
 
-\item{fb}{A `fishbone` object with cancidate stutter alleles.}
+\item{fb}{A `fishbone` object with candidate stutter alleles.}
 
 \item{motif}{Character. Motif of the repeat.}
 }
