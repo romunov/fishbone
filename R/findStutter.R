@@ -25,7 +25,7 @@
 #' @author Roman Lustrik (roman.lustrik@@biolitika.si)
 
 findStutter <- function(x, fb, motif) {
-
+  stopifnot(any(names(fb) %in% "fbid"))
   # Create list of candidate stutters which are one repeat shorther
   # than the sequence in question.
   xl <- nchar(x$Sequence) # x length
@@ -69,8 +69,8 @@ findStutter <- function(x, fb, motif) {
       if (nrow(fnds) == 0) {
         next
       }
-      # 5e. repeat 3-3d until all positions tested
-      return(NULL)
     }
+    # 5e. repeat 3-3d until all positions tested
+    return(NULL)
   }
 }
