@@ -17,7 +17,7 @@
 #' 6a. if match not found, declare no stutter found
 #'
 #' @param x A `fishbone` object.
-#' @param fb A `fishbone` object with cancidate stutter alleles.
+#' @param fb A `fishbone` object with candidate stutter alleles.
 #' @param motif Character. Motif of the repeat.
 #' @return A character string of stutter(s) ID. If stutter is not found, it
 #' returns NULL.
@@ -25,6 +25,7 @@
 #' @author Roman Lustrik (roman.lustrik@@biolitika.si)
 
 findStutter <- function(x, fb, motif) {
+
   # Create list of candidate stutters which are one repeat shorther
   # than the sequence in question.
   xl <- nchar(x$Sequence) # x length
@@ -52,7 +53,6 @@ findStutter <- function(x, fb, motif) {
     sq.loc <- stri_locate_all(sq, fixed = motif)[[1]]
 
     for (i in 1:nrow(sq.loc)) {
-      # browser()
       # 5a. shorted candidate sequence (paste together everything before/after found motif)
       newst <- paste(substr(sq, start = 1, stop = sq.loc[i, 1] - 1),
                      substr(sq, start = sq.loc[i, 2] + 1, xl),
