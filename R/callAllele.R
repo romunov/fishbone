@@ -168,7 +168,7 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
   fb <- fb[, out.ord, with = FALSE]
 
   # 1. if allele has number of reads < L, flag it as "L"
-  fb[Read_Count < as.numeric(L) & called == TRUE, flag := paste(flag, "L", sep = "")]
+  fb[fb$Read_Count < as.numeric(L) & fb$called == TRUE, flag := paste(fb$flag, "L", sep = "")]
 
   # If clean == TRUE, return only sequences which were tagged as allele or stutter
   if (clean) {
