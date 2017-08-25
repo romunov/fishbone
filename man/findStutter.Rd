@@ -7,33 +7,35 @@
 findStutter(x, fb, motif)
 }
 \arguments{
-\item{x}{A `fishbone` object.}
+\item{x}{A \code{fishbone} object.}
 
-\item{fb}{A `fishbone` object with candidate stutter alleles.}
+\item{fb}{A \code{fishbone} object with candidate stutter alleles.}
 
 \item{motif}{Character. Motif of the repeat.}
 }
 \value{
 A character string of stutter(s) ID. If stutter is not found, it
-returns NULL.
+returns \code{NULL}.
 }
 \description{
-From a `fishbone` object, try to find a stutter. It will try its best to find a stutter
-no matter where in the sequence the motif may be missing.
+Try to find a stutter. It will try its best to find a stutter no matter where in the
+sequence the motif may be missing.
 }
 \details{
 Algorithm:
-1. count number of motif repeats in a sequence
-2. count number of motif repeats in reverse of sequence
-3. if no motif repeats, signal that motif was not found
-4. find locations of all motif occurrences
-5. for each direction of sequence and for every location...
-5a. shorted candidate sequence
-5b. compare shortened sequence to possible stutter candidates
-5c. if found, signal stutter found and exit
-5d. if not found, remove second occurrence and compare to stutter candidates
-5e. repeat 3-3d until all positions tested
-6a. if match not found, declare no stutter found
+\itemize{
+  \item 1. count number of motif repeats in a sequence
+  \item 2. count number of motif repeats in reverse of sequence
+  \item 3. if no motif repeats, signal that motif was not found
+  \item 4. find locations of all motif occurrences
+  \item 5. for each direction of sequence and for every location...
+  \item 5a. shorted candidate sequence
+  \item 5b. compare shortened sequence to possible stutter candidates
+  \item 5c. if found, signal stutter found and exit
+  \item 5d. if not found, remove second occurrence and compare to stutter candidates
+  \item 5e. repeat 3-3d until all positions tested
+  \item 6a. if match not found, declare no stutter found
+}
 }
 \author{
 Roman Lustrik (roman.lustrik@biolitika.si)

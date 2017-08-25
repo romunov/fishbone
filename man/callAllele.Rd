@@ -7,59 +7,66 @@
 callAllele(fb, tbase = NULL, clean = TRUE, verbose = FALSE)
 }
 \arguments{
-\item{fb}{A `fishbone` object.}
+\item{fb}{A \code{fishbone} object.}
 
 \item{tbase}{A data.frame with thresholds which are locus specific. Thresholds are:
-- stutter (if lower than this, allele is ignored as stutter)
-- disbalance (if heterozygous alleles are not in 1:1 ratio)
-- low count (anything below this threshold gets flagged as light on read count)
-- allele with no stutter height (if no stutter is found, how many reads do we allow for alleles
-to be called)}
+\itemize{
+  \item stutter (if lower than this, allele is ignored as stutter)
+  \item disbalance (if heterozygous alleles are not in 1:1 ratio)
+  \item low count (anything below this threshold gets flagged as light on read count)
+  \item allele with no stutter height (if no stutter is found, how many reads do we allow for alleles to be called)
+}}
 
-\item{clean}{Logical. If TRUE (default), it will return only called alleles and their stutters.}
+\item{clean}{Logical. If \code{TRUE} (default), it will return only called alleles and their stutters.}
 
-\item{verbose}{Logical. If true, it will print which sample is being processed.}
+\item{verbose}{Logical. If \code{TRUE}, it will print which sample is being processed.}
+}
+\value{
+Output should be all alleles and their stutters.
 }
 \description{
 Call or flag candidate alleles to construct a consensus genotype.
 }
 \details{
-Function works on an individual run (one PCR reaction). Apply this to sample * locus * run combination.
+Function works on an individual run (one PCR reaction). Apply this to \code{sample * locus * run} combination.
 The data should come from an NGS run as processed by de Barba et al. (2016).
 
-For algorithm used to find stutters, see `?findStutter`.
+For algorithm used to find stutters, see \code{\link{findStutter}}.
 
 De Barba, M., Miquel, C., Lobréaux, S., Quenette, P. Y., Swenson, J. E., & Taberlet, P. (2016).
 High-throughput microsatellite genotyping in ecology: improved accuracy, efficiency, standardization
-and success with low-quantity and degraded DNA. Molecular Ecology Resources, 1–16.
+and success with low-quantity and degraded DNA. Molecular Ecology Resources, 1-16.
 https://doi.org/10.1111/1755-0998.12594
 
 Key for abbreviations used in (pseudo)code:
-A = allele
-S = stutter
-R = relative low threshold
-L = low count threshold
-D = disbalance
-
+\itemize{
+  \item A = allele
+  \item S = stutter
+  \item R = relative low threshold
+  \item L = low count threshold
+  \item D = disbalance
+}
 The result is appended three columns; one for called A, one for flagged alleles and if read is a stutter.
 Possible flags are:
-* L = low amplification threshold (if for some reason, number of total reads is very low, alleles get a flag)
-* N = no stutter (if there was enough reads but no stutter was present)
-* D = disbalance - alleles not in balance (expecting 1:1 for heterozygotes, those out of balance flagged)
-* M = multiple alleles (self explanatory)
+\itemize{
+  \item L = low amplification threshold (if for some reason, number of total reads is very low, alleles get a flag)
+  \item N = no stutter (if there was enough reads but no stutter was present)
+  \item D = disbalance - alleles not in balance (expecting 1:1 for heterozygotes, those out of balance flagged)
+  \item M = multiple alleles (self explanatory)
+}
 
 Algorithm is as follows:
 
-0. find max allele height
-1. if allele has number of reads < L, flag it as "L"
-2. see if allele has stutter
-2a. if yes, mark as called
-2aa. if A in disbalance (A < D), flag as "D"
-2ab. mark stutter as such $stutter = TRUE
-2b. if no, check AlleleWithNoStutterHeight
-2ba. if x > AlleleWithNoStutterHeight, add flag "N"
-2bb. if x < AlleleWithNoStutterHeight, ignore allele
-3. if number of unflagged alleles is more than 2 (those marked with D are not counted), add flag "M" to all
-
-Output should be all alleles and their stutters.
+\itemize{
+  \item 0. find max allele height
+  \item 1. if allele has number of reads < L, flag it as "L"
+  \item 2. see if allele has stutter
+  \item 2a. if yes, mark as called
+  \item 2aa. if A in disbalance (A < D), flag as "D"
+  \item 2ab. mark stutter as such $stutter = TRUE
+  \item 2b. if no, check AlleleWithNoStutterHeight
+  \item 2ba. if x > AlleleWithNoStutterHeight, add flag "N"
+  \item 2bb. if x < AlleleWithNoStutterHeight, ignore allele
+  \item 3. if number of unflagged alleles is more than 2 (those marked with D are not counted), add flag "M" to all
+}
 }

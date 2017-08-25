@@ -1,7 +1,7 @@
 Package: fishbone
 Type: Package
 Title: Tools for calling alleles/genotypes from Illumina NGS sequences
-Version: 1.0
+Version: 1.0-1
 Authors@R: c(person("Roman", "Lustrik", role = c("aut", "cre"), email = "roman.lustrik@biolitika.si"))
 Author: Roman Lustrik
 Maintainer: Roman Lustrik <roman.lustrik@biolitika.si>

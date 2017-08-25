@@ -1,11 +1,11 @@
-#' @name smp_m0tcu
+#' @name smp1
 #' @title Reads of microsatellite sequences of a non-invasive sample
 #' @description NGS (next generation sequencer) data from a project contains sequences, their read count,
 #' sample name, repeat number (PCR plate), marker (locus) designation, run name (arbitrary), position
 #' (on PCR plate), length of sequence, combination of tags used and of course, the microsatellite sequence
 #' itself.
 #' @docType data
-#' @usage smp_m0tcu
+#' @usage smp1
 #' @format A data.table.
 #' @source LIFE DinAlpBear project
 #' @keywords dataset

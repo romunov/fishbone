@@ -1,0 +1,14 @@
+fishbone v1.0-1
+===============
+Changes:
+* subsetting in callAllele() was whacky because data.table syntax doesn't sit well with R CMD check
+* changed dataset name to smp1
+* added this ChangeLog
+* improved README file
+* prettyfied the documentation
+
+fishbone v1.0 (24.8.2017)
+=============
+
+Initial release. Calles alleles and that's pretty much it. Has some data to go along for
+demonstration purposes.
