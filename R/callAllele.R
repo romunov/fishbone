@@ -64,7 +64,6 @@
 #' @import data.table
 
 callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
-
   # In case the object is not a data.table, make it one.
   if (all(class(fb) != "data.table")) {
     fb <- as.data.table(fb)
@@ -79,7 +78,7 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
   rn <- unique(fb$Run_Name)
   ps <- unique(fb$Position)
 
-  proc.info <- sprintf("sample: %s; locus: %s; plate: %s", sn, locus, plate)
+  proc.info <- sprintf("sample: %s; locus: %s; plate: %s; library: %s", sn, locus, plate, rn)
   if (verbose) {
     message(proc.info)
   }
