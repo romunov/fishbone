@@ -1,12 +1,13 @@
-Package `fishbone` will take a raw genotype from an NGS (Next Generation Sequencing) pipeline and output a called allele/stutter output.
-This output can be further imported into an appropriate application to construct consensus genotypes and statistics.
+Package `fishbone` will take a raw data from an NGS (Next Generation Sequencing) pipeline (de Barba et al., 2016) and output a called allele/stutter output. Basedon these outputs, a genotype can be constructed. This problem will be tackled elsewhere.
 
-Input might look something like this. Below is data for sample `M0X0E` for marker `03` and PCR reaction termed `8`. Notice which columns are present. `Sequence` is the raw sequence and `Read_Count` is the number of times this sequence was detected for this particular combination of `sample * plate * marker`. `TagCombo` and `Position` are related, where former is the tag combination deposited into the position on a 96 well plate.
+Input might look something like this. Below is data for sample `M0X0E`, marker `03` and PCR reaction termed `8`. `Sequence` is the raw sequence of the read(s) and `Read_Count` is the number of times this sequence has been detected for this particular combination of `sample * plate * marker`. `TagCombo` and `Position` are related, where former is the tag combination deposited into the position on a 96 well plate.
 
-```{r}
+```
 library(fishbone)
-data(mt)
-data(smp1)
+
+data(mt)  # parameters used for filtering
+data(smp1)  # some sample data
+
 smp1[Plate == 6 & Marker == "06", ]
 
     Sample_Name Plate Read_Count Marker Run_Name length Position
@@ -53,10 +54,11 @@ smp1[Plate == 6 & Marker == "06", ]
 13: caggctaa:acaaccga
 ```
 
-Below is an example of how you can call allele calling function on a combination `Sample * Marker * Plate`. Sequences not deemed alleles are removed.
+Below is an example of how you can call allele calling function on a specific combination `Sample * Marker * Plate`. Sequences not deemed alleles are removed.
 
-```{r}
-data(mt) # parameter file used to filter out (see algorithm description)
+```
+data(mt)  # parameters used to filter out (see algorithm description)
+
 callAllele(smp1[Plate == 6 & Marker == "06", ], tbase = mt)
    Sample_Name Plate Read_Count Marker Run_Name length Position called flag stutter
 1:       M0X0E     6        209     06    DAB22     87      001   TRUE        FALSE
@@ -77,10 +79,64 @@ callAllele(smp1[Plate == 6 & Marker == "06", ], tbase = mt)
 4: caggctaa:acaaccga
 5: caggctaa:acaaccga
 ```
-`mt` is a parameter file where stutter heights, absolute read count etc. are specified. Notice the addition of extra columns `called`, `flag` and `stutter`.
 
 Allele with count 76 got two flags (see below for possible flags) - `L` for low number of counts (as defined in the parameter file) and `D` because it is considered in disequilibrium with the highest allele (378 of length 71). Notice that this is an artefact because allele of length 63 is a stutter of allele of length 67 which is in turn stutter of allele of length 71. Stutter of a stutter then. This can be filtered out with appropriate parameters, which should be tailored according to your data.
 
+To run allele calling on the entire dataset, split it by whichever combination you want and call the function.
+
+```
+xy <- split(smp1, f = list(smp1$Sample_Name, smp1$Marker, smp1$Plate, smp1$Run_Name))
+out <- lapply(xy, FUN = callAllele, tbase = mt, verbose = FALSE)
+out <- do.call(rbind, out)
+
+Sample_Name Plate Read_Count Marker Run_Name length Position called flag stutter
+1:       M0X0E     3        233     03    DAB22     63      001   TRUE        FALSE
+2:       M0X0E     3        284     03    DAB22     59      001   TRUE         TRUE
+3:       M0X0E     3         27     03    DAB22     55      001  FALSE         TRUE
+4:       M0X0E     3         96     06    DAB22     87      001   TRUE    L   FALSE
+5:       M0X0E     3         29     06    DAB22     83      001  FALSE         TRUE
+---                                                                                 
+158:       M0X0E     6         31     65    DAB22     89      001  FALSE         TRUE
+159:       M0X0E     6       2036     67    DAB22     89      001   TRUE        FALSE
+160:       M0X0E     6         96     67    DAB22     85      001  FALSE         TRUE
+161:       M0X0E     6        489     68    DAB22     74      001   TRUE        FALSE
+162:       M0X0E     6         56     68    DAB22     70      001  FALSE         TRUE
+                                                                                  Sequence
+1:                           aaatcctgtaacaaatctatctatctatctatctatctatctatctatctatctatctatctc
+2:                               aaatcctgtaacaaatctatctatctatctatctatctatctatctatctatctatctc
+3:                                   aaatcctgtaacaaatctatctatctatctatctatctatctatctatctatctc
+4:   aaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaaagaagacagattgtaa
+5:       aaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaggaaaagaagacagattgtaa
+---                                                                                          
+158: gaagcaacagggtatagatatatagagatagatagatagatagatagatagatagatagataaagagatttattataaggaattggctc
+159: taattttaattttttaaaatttattttaaaatatttatttatttatttatttatttatttatttatttatttatttttgctcaccacac
+160:     taattttaattttttaaaatttattttaaaatatttatttatttatttatttatttatttatttatttatttttgctcaccacac
+161:                aacttaccaacaaactaatctatctatctatctatctatctatctatctatctatctatctatctacatatata
+162:                    aacttaccaacaaactaatctatctatctatctatctatctatctatctatctatctatctacatatata
+          TagCombo
+1: acacacac:ttacgcca
+2: acacacac:ttacgcca
+3: acacacac:ttacgcca
+4: acacacac:ttacgcca
+5: acacacac:ttacgcca
+---                  
+158: caggctaa:acaaccga
+159: caggctaa:acaaccga
+160: caggctaa:acaaccga
+161: caggctaa:acaaccga
+162: caggctaa:acaaccga
+```
+
+If you want to use `data.table` syntax, note that a set of columns will be duplicated.
+
+```
+system.time(out <- smp1[, callAllele(c(.BY, .SD), tbase = mt, verbose = TRUE),
+                        by = .(Sample_Name, Marker, Plate, Run_Name)])
+```
+
+One duplicate can easily be removed (not shown).
+
+### Algorithm
 Algorithm used to extract alleles from junk is as follows:
 
 ```
@@ -98,11 +154,27 @@ Algorithm used to extract alleles from junk is as follows:
 
 From the above we can deduce that if a sequence also has a corresponding stutter of appropriate height(s), it is called as an allele. Sequences functioning as stutters are marked as such.
 
-Known flags are:
+### Supported flags
 
-```
 * L = low amplification threshold (if for some reason, number of total reads is very low, alleles get a flag)
 * N = no stutter (if there was enough reads but no stutter was present)
 * D = disbalance - alleles not in balance (expecting 1:1 for heterozygotes, those out of balance flagged)
 * M = multiple alleles (self explanatory)
+
+### Filtering parameters
+
+`mt` is a parameter data.frame where stutter heights, absolute read count etc. are specified. Notice the addition of extra columns `called`, `flag` and `stutter`. This will depend on your experiment so modify or create a new one as needed.
+
 ```
+> head(mt)
+   Marker Repeat Stutter Disbalance LowCount AlleleWithNoStutterHeight
+1:     03   ctat    0.18       0.33      100                       100
+2:     06   aagg    0.18       0.33      100                       100
+3:     14  tttta    0.18       0.33      100                       100
+4:     16   cttt    0.18       0.33      100                       100
+5:     17   cttt    0.18       0.33      100                       100
+6:     25   cttt    0.18       0.33      100                       100
+```
+
+### References
+De Barba M, Miquel C, Lobréaux S, et al (2016) High-throughput microsatellite genotyping in ecology: improved accuracy, efficiency, standardization and success with low-quantity and degraded DNA. Molecular Ecology Resources 1–16. doi: 10.1111/1755-0998.12594
