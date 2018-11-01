@@ -152,8 +152,6 @@ Algorithm used to extract alleles from junk is as follows:
 3. if number of unflagged alleles is more than 2 (those marked with D are not counted), add flag "M" to all
 ```
 
-From the above we can deduce that if a sequence also has a corresponding stutter of appropriate height(s), it is called as an allele. Sequences functioning as stutters are marked as such.
-
 ### Supported flags
 
 * L = low amplification threshold (if for some reason, number of total reads is very low, alleles get a flag)

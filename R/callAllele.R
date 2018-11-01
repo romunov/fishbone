@@ -183,7 +183,6 @@ callAllele <- function(fb, tbase = NULL, clean = TRUE, verbose = FALSE) {
   }
 
   if (nrow(out) == 0) {
-    # out <- sprintf("sample: %s; locus: %s; plate: %s", sn, locus, plate)
     return(out.blank)
   }
   out
