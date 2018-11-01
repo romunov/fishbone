@@ -1,10 +1,9 @@
 Package: fishbone
 Type: Package
-Title: Tools for calling alleles/genotypes from Illumina NGS sequences
+Title: Tools for Calling Alleles/Genotypes from Illumina NGS Sequences
 Version: 1.0-1
-Authors@R: c(person("Roman", "Lustrik", role = c("aut", "cre"), email = "roman.lustrik@biolitika.si"))
-Author: Roman Lustrik
-Maintainer: Roman Lustrik <roman.lustrik@biolitika.si>
+Authors@R: c(person("Roman", "Lustrik", role = c("aut", "cre"), email = "roman.lustrik@biolitika.si"),
+             person("Tomaz", "Skrbinsek", role = c("ctb"), email = "tomaz.skrbinsek@gmail.com"))
 Description: Assuming you have read count for samples/loci in more than one run, you can call alleles with the help of this package.
 License: GPL-2
 Imports:
