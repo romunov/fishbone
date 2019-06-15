@@ -1,4 +1,4 @@
-Package `fishbone` will take a raw data from an NGS (Next Generation Sequencing) pipeline (de Barba et al., 2016) and output a called allele/stutter output. Basedon these outputs, a genotype can be constructed. This problem will be tackled elsewhere.
+Package `fishbone` will take a raw data from an NGS (Next Generation Sequencing) pipeline (de Barba et al., 2016) and output a called allele/stutter output. Based on these outputs, a genotype can be constructed. This problem will be tackled elsewhere.
 
 Input might look something like this. Below is data for sample `M0X0E`, marker `03` and PCR reaction termed `8`. `Sequence` is the raw sequence of the read(s) and `Read_Count` is the number of times this sequence has been detected for this particular combination of `sample * plate * marker`. `TagCombo` and `Position` are related, where former is the tag combination deposited into the position on a 96 well plate.
 
